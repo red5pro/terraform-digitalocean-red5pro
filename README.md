@@ -1,7 +1,7 @@
-# DO Red5 Pro Terraform module
+# Digital Ocean Red5 Pro Terraform module
 [Red5 Pro](https://www.red5.net/) is a real-time video streaming server plaform known for its low-latency streaming capabilities, making it ideal for interactive applications like online gaming, streaming events and video conferencing etc.
 
-This a reusable Terraform installer module for [Red5 Pro](https://www.red5pro.com/docs/installation/installation/do-install/) that provisions infrastucture over [Digital Ocean(DO)](https://www.digitalocean.com/).
+This a reusable Terraform installer module for [Red5 Pro](https://www.red5pro.com/docs/installation/installation/do-install/) that provisions infrastucture over [Digital Ocean](https://www.digitalocean.com/).
 
 ## This module has 3 variants of Red5 Pro deployments
 
@@ -14,13 +14,13 @@ This a reusable Terraform installer module for [Red5 Pro](https://www.red5pro.co
 ## Preparation
 
 * Install **terraform** https://developer.hashicorp.com/terraform/downloads
-* Install **DO CLI** https://docs.digitalocean.com/reference/doctl/how-to/install/
+* Install **Digital Ocean CLI** https://docs.digitalocean.com/reference/doctl/how-to/install/
 * Install **jq** Linux or Mac OS only - `apt install jq` or `brew install jq` (It is using in bash scripts to create/delete Stream Manager node group using API)
 * Download Red5 Pro server build: (Example: red5pro-server-0.0.0.b0-release.zip) https://account.red5pro.com/downloads
-* Download Red5 Pro Terraform controller for DO: (Example: terraform-cloud-controller-0.0.0.jar) https://account.red5pro.com/downloads
+* Download Red5 Pro Terraform controller for Digital Ocean: (Example: terraform-cloud-controller-0.0.0.jar) https://account.red5pro.com/downloads
 * Download Red5 Pro Terraform Service : (Example: terraform-service-0.0.0.zip) https://account.red5pro.com/downloads
 * Get Red5 Pro License key: (Example: 1111-2222-3333-4444) https://account.red5pro.com
-* Get DO API key or use existing (To access Digital Ocean Cloud) 
+* Get Digital Ocean API key or use existing (To access Digital Ocean Cloud) 
   * Follow the documentation for generating API keys - https://docs.digitalocean.com/reference/api/create-personal-access-token/
 * Copy Red5 Pro server build, Terraform service and Terraform controller to the root folder of your project
 
@@ -105,10 +105,10 @@ module "red5pro" {
 ***MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
 * **Terraform Server** - Uesrs can choose to create a dedicated droplet for Terraform Server or install it locally on the Stream Manager
 * **Stream Manager** - Droplet will be created automatically for Stream Manager
-* **Origin Node Image** - To create Digital Ocean(DO) custom image for Orgin Node type for Stream Manager node group
-* **Edge Node Image** - To create Digital Ocean(DO) custom image for Edge Node type for Stream Manager node group (optional)
-* **Transcoder Node Image** - To create Digital Ocean(DO) custom image for Transcoder Node type for Stream Manager node group (optional)
-* **Relay Node Image** - To create Digital Ocean(DO) custom image for Relay Node type for Stream Manager node group (optional)
+* **Origin Node Image** - To create Digital Ocean custom image for Orgin Node type for Stream Manager node group
+* **Edge Node Image** - To create Digital Ocean custom image for Edge Node type for Stream Manager node group (optional)
+* **Transcoder Node Image** - To create Digital Ocean custom image for Transcoder Node type for Stream Manager node group (optional)
+* **Relay Node Image** - To create Digital Ocean custom image for Relay Node type for Stream Manager node group (optional)
 
 ## Usage (cluster)
 
@@ -231,10 +231,10 @@ module "red5pro_cluster" {
 ***MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
 * **Terraform Server** - Uesrs can choose to create a dedicated droplet for Terraform Server or install it locally on the Stream Manager
 * **Stream Manager** - Droplet will be created automatically for Stream Manager
-* **Origin Node Image** - To create Digital Ocean(DO) custom image for Orgin Node type for Stream Manager node group
-* **Edge Node Image** - To create Digital Ocean(DO) custom image for Edge Node type for Stream Manager node group (optional)
-* **Transcoder Node Image** - To create Digital Ocean(DO) custom image for Transcoder Node type for Stream Manager node group (optional)
-* **Relay Node Image** - To create Digital Ocean(DO) custom image for Relay Node type for Stream Manager node group (optional)
+* **Origin Node Image** - To create Digital Ocean custom image for Orgin Node type for Stream Manager node group
+* **Edge Node Image** - To create Digital Ocean custom image for Edge Node type for Stream Manager node group (optional)
+* **Transcoder Node Image** - To create Digital Ocean custom image for Transcoder Node type for Stream Manager node group (optional)
+* **Relay Node Image** - To create Digital Ocean custom image for Relay Node type for Stream Manager node group (optional)
 
 
 ## Usage (autoscaling)
