@@ -8,6 +8,21 @@
 ## Preparation
 
 * Install **terraform** https://developer.hashicorp.com/terraform/downloads
+  * Open your web browser and visit the [Terraform download page](https://developer.hashicorp.com/terraform/downloads), ensuring you get version 1.0.0 or higher. 
+  * Download the suitable version for your operating system, 
+  * Extract the compressed file, and then copy the Terraform binary to a location within your system's path
+    * Configure path on Linux/macOS 
+      * Open a terminal and type the following:
+
+        ```$ sudo mv /path/to/terraform /usr/local/bin```
+    * Configure path on Windows OS
+      * Click 'Start', search for 'Control Panel', and open it.
+      * Navigate to System > Advanced System Settings > Environment Variables.
+      * Under System variables, find 'PATH' and click 'Edit'.
+      * Click 'New' and paste the directory location where you extracted the terraform.exe file.
+      * Confirm changes by clicking 'OK' and close all open windows.
+      * Open a new terminal and verify that Terraform has been successfully installed.
+
 * Install **DO CLI** https://docs.digitalocean.com/reference/doctl/how-to/install/
 * Install **jq** Linux or Mac OS only - `apt install jq` or `brew install jq` (It is using in bash scripts to create/delete Stream Manager node group using API)
 * Download Red5 Pro server build: (Example: red5pro-server-0.0.0.b0-release.zip) https://account.red5pro.com/downloads

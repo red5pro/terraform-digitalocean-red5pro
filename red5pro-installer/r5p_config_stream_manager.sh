@@ -49,10 +49,10 @@ config_sm_properties_do(){
         exit 1
     fi
     
-    local terra_region_pattern='#terra.regionNames=.*'
+    local terra_region_pattern='#terra.regionNames=ams2, ams3, blr1.*'
     local terra_region_new="terra.regionNames=ams2, ams3, blr1, fra1, lon1, nyc1, nyc2, nyc3, sfo1, sfo2, sfo3, sgp1, tor1"
     
-    local terra_instance_name_pattern='#terra.instanceName=.*'
+    local terra_instance_name_pattern='#terra.instanceName=digitalocean_droplet'
     local terra_instance_name_new="terra.instanceName=digitalocean_droplet"
     
     local terra_host_pattern='#terra.host=.*'

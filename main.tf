@@ -9,12 +9,12 @@ locals {
   vpc                              = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].id : data.digitalocean_vpc.selected[0].id
   vpc_name                         = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].name : data.digitalocean_vpc.selected[0].name
   mysql_local_enable               = local.autoscaling ? false : var.mysql_database_create ? false : true
-  mysql_database_create            = local.autoscaling ? true : local.cluster && var.mysql_database_create ? true : false
-  mysql_host                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].host : local.cluster ? var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].private_host : "localhost" : null
-  mysql_user                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].user : local.cluster ? var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].user : var.mysql_username : null
-  mysql_password                   = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].password : local.cluster ? var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].password : var.mysql_password : null
-  mysql_port                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].port : local.cluster ? var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].port : var.mysql_port : null
-  terra_host                       = local.autoscaling ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address_private : local.cluster && var.dedicated_terra_host_create ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address_private : "localhost"
+  mysql_db_system_create           = local.autoscaling ? true : local.cluster && var.mysql_database_create ? true : local.cluster && var.dedicated_terra_host_create ? true : false
+  mysql_host                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].host : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].host : local.cluster && var.dedicated_terra_host_create ? digitalocean_database_cluster.red5pro_mysql[0].host : "localhost"
+  mysql_user                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].user : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].user : local.cluster && var.dedicated_terra_host_create ? digitalocean_database_cluster.red5pro_mysql[0].user : var.mysql_username 
+  mysql_password                   = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].password : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].password : local.cluster && var.dedicated_terra_host_create ? digitalocean_database_cluster.red5pro_mysql[0].password : var.mysql_password
+  mysql_port                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].port : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].port : local.cluster && var.dedicated_terra_host_create ? digitalocean_database_cluster.red5pro_mysql[0].port : var.mysql_port
+  terra_host                       = local.autoscaling ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : local.cluster && var.dedicated_terra_host_create ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : "localhost"
   terra_host_local_enable          = local.autoscaling ? false : var.dedicated_terra_host_create ? false : true
   dedicated_terra_host_create      = local.autoscaling ? true : local.cluster && var.dedicated_terra_host_create ? true : false
   stream_manager_ip                = local.autoscaling || local.cluster ? digitalocean_droplet.red5pro_sm[0].ipv4_address : null
@@ -38,7 +38,7 @@ resource "digitalocean_project" "do_project" {
               local.cluster || local.autoscaling ?
               digitalocean_droplet.red5pro_sm[0].urn : "",
 
-              local.mysql_database_create ?
+              local.mysql_db_system_create ?
               digitalocean_database_cluster.red5pro_mysql[0].urn : "",
 
               local.dedicated_terra_host_create ?
@@ -119,7 +119,7 @@ data "digitalocean_vpc" "selected" {
 ################################################################################
 resource "digitalocean_droplet" "red5pro_single" {
   count    = local.single ? 1 : 0
-  name     = "${var.name}-red5-single-${count.index}"
+  name     = "${var.name}-red5-single"
   region   = var.do_region
   size     = var.single_droplet_size
   image    = "ubuntu-20-04-x64"
@@ -127,7 +127,7 @@ resource "digitalocean_droplet" "red5pro_single" {
   vpc_uuid = local.vpc
 
   connection {
-    host        = digitalocean_droplet.red5pro_single[count.index].ipv4_address
+    host        = digitalocean_droplet.red5pro_single[0].ipv4_address
     type        = "ssh"
     user        = "root"
     private_key = local.ssh_private_key
@@ -176,7 +176,7 @@ resource "digitalocean_droplet" "red5pro_single" {
 
     ]
     connection {
-      host        = digitalocean_droplet.red5pro_single[count.index].ipv4_address
+      host        = digitalocean_droplet.red5pro_single[0].ipv4_address
       type        = "ssh"
       user        = "root"
       private_key = local.ssh_private_key
@@ -333,7 +333,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
 ################################################################################
 # Stream Manager Database Digital Ocean
 resource "digitalocean_database_cluster" "red5pro_mysql" {
-  count      = local.mysql_database_create ? 1 : 0
+  count      = local.mysql_db_system_create ? 1 : 0
   name       = "${var.name}-mysql-sm-db"
   region     = var.do_region
   version    = "8"
@@ -345,7 +345,7 @@ resource "digitalocean_database_cluster" "red5pro_mysql" {
 
 # Allowing stream manager and terraform service droplet to access the MySQL Database
 resource "digitalocean_database_firewall" "database_fw" {
-  count      = local.mysql_database_create ? 1 : 0
+  count      = local.mysql_db_system_create ? 1 : 0
   cluster_id = digitalocean_database_cluster.red5pro_mysql[0].id
 
   rule {
@@ -398,7 +398,7 @@ resource "digitalocean_droplet" "red5pro_terraform_service" {
       "sudo cloud-init status --wait",
       "export DO_API_TOKEN='${var.do_token}'",
       "export SSH_KEY_NAME='${local.ssh_key_name}'",
-      "export TERRA_HOST='${self.ipv4_address_private}'",
+      "export TERRA_HOST='${self.ipv4_address}'",
       "export TERRA_API_TOKEN='${var.terra_api_token}'",
       "export TERRA_PARALLELISM='${var.terra_parallelism}'",
       "export DB_HOST='${local.mysql_host}'",
