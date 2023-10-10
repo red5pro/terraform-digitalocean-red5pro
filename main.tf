@@ -27,7 +27,7 @@ locals {
 # PROJECT SETUP IN DIGITAL OCEAN
 ################################################################################
 resource "digitalocean_project" "do_project" {
-  count       = var.do_project ? 1 : 0
+  count       = var.digital_ocean_project ? 1 : 0
   name        = var.project_name
   purpose     = "Red5Pro Deployments"
   environment = "Production"
@@ -104,7 +104,7 @@ data "digitalocean_ssh_key" "ssh_key_pair" {
 resource "digitalocean_vpc" "red5pro_vpc" {
   count    = var.vpc_create ? 1 : 0
   ip_range = "10.5.0.0/16"
-  region   = var.do_region
+  region   = var.digital_ocean_region
   name     = "${var.name}-vpc"
 }
 
@@ -120,7 +120,7 @@ data "digitalocean_vpc" "selected" {
 resource "digitalocean_droplet" "red5pro_single" {
   count    = local.single ? 1 : 0
   name     = "${var.name}-red5-single"
-  region   = var.do_region
+  region   = var.digital_ocean_region
   size     = var.single_droplet_size
   image    = "ubuntu-20-04-x64"
   ssh_keys = [local.ssh_key]
@@ -245,7 +245,7 @@ resource "digitalocean_firewall" "red5pro_sm_fw" {
 resource "digitalocean_droplet" "red5pro_sm" {
   count    = local.cluster || local.autoscaling ? 1 : 0
   name     = "${var.name}-red5-sm"
-  region   = var.do_region
+  region   = var.digital_ocean_region
   size     = var.stream_manager_droplet_size
   image    = "ubuntu-20-04-x64"
   ssh_keys = [local.ssh_key]
@@ -301,7 +301,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
       "export TERRA_HOST='${local.terra_host}'",
       "export TERRA_API_TOKEN='${var.terra_api_token}'",
       "export TERRA_PARALLELISM='${var.terra_parallelism}'",
-      "export DO_API_TOKEN='${var.do_token}'",
+      "export DO_API_TOKEN='${var.digital_ocean_token}'",
       "export SSH_KEY_NAME='${local.ssh_key_name}'",
       "export DB_HOST='${local.mysql_host}'",
       "export DB_PORT='${local.mysql_port}'",
@@ -335,7 +335,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
 resource "digitalocean_database_cluster" "red5pro_mysql" {
   count                = local.mysql_db_system_create ? 1 : 0
   name                 = "${var.name}-mysql-sm-db"
-  region               = var.do_region
+  region               = var.digital_ocean_region
   version              = "8"
   size                 = var.mysql_database_size
   node_count           = 1
@@ -364,7 +364,7 @@ resource "digitalocean_database_firewall" "database_fw" {
 resource "digitalocean_droplet" "red5pro_terraform_service" {
   count    = local.dedicated_terra_host_create ? 1 : 0
   name     = "${var.name}-red5-terraform-service"
-  region   = var.do_region
+  region   = var.digital_ocean_region
   size     = var.terraform_service_droplet_size
   image    = "ubuntu-20-04-x64"
   ssh_keys = [local.ssh_key]
@@ -396,7 +396,7 @@ resource "digitalocean_droplet" "red5pro_terraform_service" {
     inline = [
       "sudo iptables -F",
       "sudo cloud-init status --wait",
-      "export DO_API_TOKEN='${var.do_token}'",
+      "export DO_API_TOKEN='${var.digital_ocean_token}'",
       "export SSH_KEY_NAME='${local.ssh_key_name}'",
       "export TERRA_HOST='${self.ipv4_address}'",
       "export TERRA_API_TOKEN='${var.terra_api_token}'",
@@ -450,7 +450,7 @@ resource "digitalocean_firewall" "red5pro_terraform_service_fw" {
 resource "digitalocean_loadbalancer" "red5pro_lb" {
   count     = local.autoscaling ? 1 : 0
   name      = "${var.name}-red5pro-lb"
-  region    = var.do_region
+  region    = var.digital_ocean_region
   size_unit = var.lb_size_count
 
   forwarding_rule {
@@ -505,7 +505,7 @@ resource "digitalocean_certificate" "new_lb_cert" {
 resource "digitalocean_droplet" "red5pro_origin_node" {
   count    = var.origin_image_create ? 1 : 0
   name     = "${var.name}-node-origin-image"
-  region   = var.do_region
+  region   = var.digital_ocean_region
   size     = var.origin_image_droplet_size
   image    = "ubuntu-20-04-x64"
   ssh_keys = [local.ssh_key]
@@ -570,7 +570,7 @@ resource "digitalocean_droplet" "red5pro_origin_node" {
 resource "digitalocean_droplet" "red5pro_edge_node" {
   count    = var.edge_image_create ? 1 : 0
   name     = "${var.name}-node-edge-image"
-  region   = var.do_region
+  region   = var.digital_ocean_region
   size     = var.edge_image_droplet_size
   image    = "ubuntu-20-04-x64"
   ssh_keys = [local.ssh_key]
@@ -635,7 +635,7 @@ resource "digitalocean_droplet" "red5pro_edge_node" {
 resource "digitalocean_droplet" "red5pro_transcoder_node" {
   count    = var.transcoder_image_create ? 1 : 0
   name     = "${var.name}-node-transcoder-image"
-  region   = var.do_region
+  region   = var.digital_ocean_region
   size     = var.transcoder_image_droplet_size
   image    = "ubuntu-20-04-x64"
   ssh_keys = [local.ssh_key]
@@ -700,7 +700,7 @@ resource "digitalocean_droplet" "red5pro_transcoder_node" {
 resource "digitalocean_droplet" "red5pro_relay_node" {
   count    = var.relay_image_create ? 1 : 0
   name     = "${var.name}-node-relay-image"
-  region   = var.do_region
+  region   = var.digital_ocean_region
   size     = var.relay_image_droplet_size
   image    = "ubuntu-20-04-x64"
   ssh_keys = [local.ssh_key]
@@ -803,7 +803,7 @@ resource "digitalocean_droplet_snapshot" "relay-snapshot" {
 resource "null_resource" "stop_node_origin" {
   count = var.origin_image_create ? 1 : 0
   provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_origin_node[0].id} -f --access-token ${var.do_token}"
+    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_origin_node[0].id} -f --access-token ${var.digital_ocean_token}"
   }
   depends_on = [digitalocean_droplet_snapshot.origin-snapshot]
 }
@@ -811,7 +811,7 @@ resource "null_resource" "stop_node_origin" {
 resource "null_resource" "stop_node_edge" {
   count = var.edge_image_create ? 1 : 0
   provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_edge_node[0].id} -f --access-token ${var.do_token}"
+    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_edge_node[0].id} -f --access-token ${var.digital_ocean_token}"
   }
   depends_on = [digitalocean_droplet_snapshot.edge-snapshot]
 }
@@ -819,7 +819,7 @@ resource "null_resource" "stop_node_edge" {
 resource "null_resource" "stop_node_transcoder" {
   count = var.transcoder_image_create ? 1 : 0
   provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_transcoder_node[0].id} -f --access-token ${var.do_token}"
+    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_transcoder_node[0].id} -f --access-token ${var.digital_ocean_token}"
   }
   depends_on = [digitalocean_droplet_snapshot.transcoder-snapshot]
 }
@@ -827,7 +827,7 @@ resource "null_resource" "stop_node_transcoder" {
 resource "null_resource" "stop_node_relay" {
   count = var.relay_image_create ? 1 : 0
   provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_relay_node[0].id} -f --access-token ${var.do_token}"
+    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_relay_node[0].id} -f --access-token ${var.digital_ocean_token}"
   }
   depends_on = [digitalocean_droplet_snapshot.relay-snapshot]
 }
@@ -850,7 +850,7 @@ resource "null_resource" "node_group" {
       NAME                     = "${var.name}"
       SM_IP                    = "${local.stream_manager_ip}"
       SM_API_KEY               = "${var.stream_manager_api_key}"
-      NODE_GROUP_REGION        = "${var.do_region}"
+      NODE_GROUP_REGION        = "${var.digital_ocean_region}"
       NODE_GROUP_NAME          = "${var.node_group_name}"
       ORIGINS                  = "${var.node_group_origins}"
       EDGES                    = "${var.node_group_edges}"

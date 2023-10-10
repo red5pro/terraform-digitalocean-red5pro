@@ -24,7 +24,7 @@ output "node_relay_image" {
 
 output "digital_ocean_project" {
   description = "Digital Ocean project where resources will be created"
-  value       = var.do_project ? var.project_name : null
+  value       = var.digital_ocean_project ? var.project_name : null
 }
 
 output "ssh_key_name" {

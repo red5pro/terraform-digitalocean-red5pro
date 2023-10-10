@@ -23,11 +23,11 @@
       * Confirm changes by clicking 'OK' and close all open windows.
       * Open a new terminal and verify that Terraform has been successfully installed.
 
-* Install **DO CLI** https://docs.digitalocean.com/reference/doctl/how-to/install/
+* Install **Digital Ocean CLI** https://docs.digitalocean.com/reference/doctl/how-to/install/
 * Install **jq** Linux or Mac OS only - `apt install jq` or `brew install jq` (It is using in bash scripts to create/delete Stream Manager node group using API)
 * Download Red5 Pro server build: (Example: red5pro-server-0.0.0.b0-release.zip) https://account.red5pro.com/downloads
 * Get Red5 Pro License key: (Example: 1111-2222-3333-4444) https://account.red5pro.com
-* Get DO API key or use existing (To access Digital Ocean Cloud) 
+* Get Digital Ocean API key or use existing (To access Digital Ocean Cloud) 
 * Copy Red5 Pro server build to the root folder of your project
 
 Example:  

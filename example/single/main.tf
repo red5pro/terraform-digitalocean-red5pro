@@ -15,13 +15,13 @@ provider "digitalocean" {
 }
 
 module "red5pro" {
-  source    = "../../"
-  do_region = "" # Digital Ocean region where resources will create eg: blr1
+  source               = "../../"
+  digital_ocean_region = "" # Digital Ocean region where resources will create eg: blr1
 
-  type         = "single"         # Deployment type: single, cluster, autoscaling
-  name         = ""               # Name to be used on all the resources as identifier
-  do_project   = true             # Create a new project in Digital Ocean
-  project_name = "Exaple-Project" # New Project name in digital Ocean
+  type                  = "single"         # Deployment type: single, cluster, autoscaling
+  name                  = ""               # Name to be used on all the resources as identifier
+  digital_ocean_project = true             # Create a new project in Digital Ocean
+  project_name          = "Exaple-Project" # New Project name in digital Ocean
 
   path_to_red5pro_build = "./red5pro-server-0.0.0.0-release.zip" # Absolute path or relative path to Red5 Pro server ZIP file
 

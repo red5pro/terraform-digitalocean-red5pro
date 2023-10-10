@@ -8,7 +8,7 @@ variable "name" {
   }
 }
 
-variable "do_project" {
+variable "digital_ocean_project" {
   description = "Create a new project in Digital Ocean to access all created resources. true = create new project, false = use default project in DO."
   default     = true
 }
@@ -40,12 +40,12 @@ variable "path_to_red5pro_build" {
 }
 
 # Digital Ocean configuration
-variable "do_region" {
+variable "digital_ocean_region" {
   description = "DO region to deploy the resources"
   default     = ""
 }
 
-variable "do_token" {
+variable "digital_ocean_token" {
   description = "DO token to access the services of cloud"
   default     = ""
 }
