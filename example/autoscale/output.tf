@@ -45,7 +45,7 @@ output "database_port" {
 }
 
 output "database_password" {
-  sensitive = true
+  sensitive   = true
   description = "Database Password"
   value       = module.red5pro_autoscale.database_password
 }
@@ -72,10 +72,10 @@ output "node_relay_image" {
 
 output "load_balancer_ip_address" {
   description = "Load balancer IP address"
-  value = module.red5pro_autoscale.load_balancer_ip
+  value       = module.red5pro_autoscale.load_balancer_ip
 }
 
 output "lb_https_url" {
   description = "Load balancer https url"
-  value = module.red5pro_autoscale.load_balancer_https_url
+  value       = module.red5pro_autoscale.load_balancer_https_url
 }
