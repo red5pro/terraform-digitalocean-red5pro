@@ -4,7 +4,7 @@
 * **Firewall** - This Terrform module create a new Firewall in Digital Ocean.
 * **Droplet Size** - Select the appropriate droplet size based on the usecase from Digital Ocean.
 * **SSL Certificates** - User can install Let's encrypt SSL certificates or use Red5Pro server without SSL certificate (HTTP only).
-***MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
+* **MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
 * **Terraform Server** - Uesrs can choose to create a dedicated droplet for Terraform Server or install it locally on the Stream Manager
 * **Stream Manager** - Droplet will be created automatically for Stream Manager
 * **Origin Node Image** - To create Digital Ocean(DO) custom image for Orgin Node type for Stream Manager node group

@@ -10,13 +10,13 @@ variable "name" {
 
 variable "digital_ocean_project" {
   description = "Create a new project in Digital Ocean to access all created resources. true = create new project, false = use default project in DO."
-  default     = true
+  default = true
 }
 
 variable "project_name" {
   description = "A unique project used in digital ocean to create all resources. When do_project = true"
-  type        = string
-  default     = ""
+  type = string
+  default = ""
 }
 
 variable "type" {
@@ -26,6 +26,15 @@ variable "type" {
   validation {
     condition     = var.type == "single" || var.type == "cluster" || var.type == "autoscaling"
     error_message = "The type value must be a valid! Example: single, cluster, autoscaling"
+  }
+}
+variable "ubuntu_version" {
+  description = "Ubuntu version which is going to be used for creating droplet in Digital Ocean"
+  type = string
+  default = "20.04"
+  validation {
+    condition = var.ubuntu_version == "20.04" || var.ubuntu_version == "22.04"
+    error_message = "Please specify the correct ubuntu version, it can either be 20.04 or 22.04"
   }
 }
 
@@ -277,14 +286,14 @@ variable "outbound_rules" {
 # Load Balancer Configuration
 variable "lb_size_count" {
   description = " The size of the Load Balancer. It must be in the range (1, 100)."
-  type        = number
-  default     = 2
+  type = number
+  default = 2
 }
 
 variable "lb_ssl_create" {
   description = "Create a new SSL certificate for Load Balancer created in DO (autoscaling)"
-  type        = bool
-  default     = true
+  type = bool
+  default = true
 }
 
 variable "lb_ssl_certificate_type" {
@@ -299,20 +308,20 @@ variable "lb_ssl_certificate_type" {
 
 variable "existing_lb_domain_name" {
   description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = lets_encrypt, Load balancer exiting fully qualified domain names (FQDNs) for which the certificate will be issued. Only when 'lb_ssl_certificate_type' == lets_encrypt"
-  type        = string
-  default     = ""
+  type = string
+  default = ""
 }
 
 variable "lb_exist_ssl_cert_name" {
-  description = "If 'lb_ssl_create' = false, Use existing SSL certificate for Load Balancer already uploaded in DO (autoscaling)"
-  type        = string
-  default     = ""
+   description = "If 'lb_ssl_create' = false, Use existing SSL certificate for Load Balancer already uploaded in DO (autoscaling)"
+   type = string
+   default = ""
 }
 
 variable "new_lb_cert_name" {
   description = "If 'lb_ssl_create' = true, New Load Balancer certificate name"
-  type        = string
-  default     = ""
+  type = string
+  default = ""
 }
 
 variable "cert_fullchain" {
@@ -353,7 +362,7 @@ variable "mysql_password" {
   description = "MySQL password if mysql_database_create = false"
   type        = string
   default     = ""
-  sensitive   = true
+  sensitive = true
 }
 variable "mysql_port" {
   description = "MySQL port if mysql_database_create = false"

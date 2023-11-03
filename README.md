@@ -7,7 +7,7 @@ This a reusable Terraform installer module for [Red5 Pro](https://www.red5pro.co
 
 * **single** - Single droplet with installed and configured Red5 Pro server
 * **cluster** - Stream Manager cluster (MySQL DB + Stream Manager droplet + Autoscaling Node group with Origin, Edge, Transcoder, Relay droplets)
-* **autoscaling** - Autoscaling Stream Managers (MySQL RDS + Load Balancer + Autoscaling Stream Managers + Autoscaling Node group with Origin, Edge, Transcoder, Relay droplets)
+* **autoscaling** - Autoscaling Stream Managers (MySQL DB + Load Balancer + Autoscaling Stream Managers + Autoscaling Node group with Origin, Edge, Transcoder, Relay droplets)
 
 ---
 
@@ -117,7 +117,7 @@ module "red5pro" {
 * **Firewall** - This Terrform module create a new Firewall in Digital Ocean.
 * **Droplet Size** - Select the appropriate droplet size based on the usecase from Digital Ocean.
 * **SSL Certificates** - User can install Let's encrypt SSL certificates or use Red5Pro server without SSL certificate (HTTP only).
-***MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
+* **MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
 * **Terraform Server** - Uesrs can choose to create a dedicated droplet for Terraform Server or install it locally on the Stream Manager
 * **Stream Manager** - Droplet will be created automatically for Stream Manager
 * **Origin Node Image** - To create Digital Ocean(DO) custom image for Orgin Node type for Stream Manager node group
@@ -189,7 +189,7 @@ module "red5pro" {
 * **Droplet Size** - Select the appropriate droplet size based on the usecase from Digital Ocean.
 * **Load Balancer** - Digital Ocean load balancer for Stream Managers will be created automatically
 * **SSL Certificates** - User can install Let's encrypt SSL certificates or use Red5Pro server without SSL certificate (HTTP only).
-***MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
+* **MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
 * **Terraform Server** - Uesrs can choose to create a dedicated droplet for Terraform Server or install it locally on the Stream Manager
 * **Stream Manager** - Droplet will be created automatically for Stream Manager
 * **Origin Node Image** - To create Digital Ocean(DO) custom image for Orgin Node type for Stream Manager node group
