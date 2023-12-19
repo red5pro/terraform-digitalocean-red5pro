@@ -76,6 +76,13 @@ check_linux_and_java_versions(){
                 *) log_e "JDK version is not supported $jdk_version"; pause ;;
             esac
         ;;
+        22.04)
+            case "${jdk_version}" in
+                jdk8) PACKAGES=("${PACKAGES_2004[@]}" "${JDK_8[@]}") ;;
+                jdk11) PACKAGES=("${PACKAGES_2004[@]}" "${JDK_11[@]}") ;;
+                *) log_e "JDK version is not supported $jdk_version"; pause ;;
+            esac
+        ;;
         *) log_e "Linux version is not supported $DISTRIB_RELEASE"; pause ;;
     esac
 }
@@ -194,7 +201,7 @@ install_red5pro_service(){
     
     local service_memory_pattern='-Xms2g -Xmx2g'
     local service_memory_new="-Xms${JVM_MEMORY}g -Xmx${JVM_MEMORY}g"
-    sudo sed -i -e "s|$service_memory_pattern|$service_memory_new|" "/lib/systemd/system/red5pro.service"
+    sed -i -e "s|$service_memory_pattern|$service_memory_new|" "/lib/systemd/system/red5pro.service"
     
     systemctl daemon-reload
     systemctl enable red5pro.service
@@ -202,23 +209,11 @@ install_red5pro_service(){
 
 linux_optimization(){
     log_i "Start Linux optimization"
-
-    echo 'fs.file-max = 1000000' | sudo tee -a /etc/sysctl.conf
-    echo 'kernel.pid_max = 999999' | sudo tee -a /etc/sysctl.conf
-    echo 'kernel.threads-max = 999999' | sudo tee -a /etc/sysctl.conf
-    echo 'vm.max_map_count = 1999999' | sudo tee -a /etc/sysctl.conf
-    echo 'root soft nofile 1000000' | sudo tee -a /etc/security/limits.conf
-    echo 'root hard nofile 1000000' | sudo tee -a /etc/security/limits.conf
-    echo 'ubuntu soft nofile 1000000' | sudo tee -a /etc/security/limits.conf
-    echo 'ubuntu hard nofile 1000000' | sudo tee -a /etc/security/limits.conf
-    echo 'session required pam_limits.so' | sudo tee -a /etc/pam.d/common-session
-    ulimit -n 1000000
-    sysctl -p
-
+    
     local service_limitnofile_pattern='LimitNOFILE=65536'
     local service_limitnofile_new="LimitNOFILE=1000000"
 
-    sudo sed -i -e "s|$service_limitnofile_pattern|$service_limitnofile_new|" "/lib/systemd/system/red5pro.service"
+    sed -i -e "s|$service_limitnofile_pattern|$service_limitnofile_new|" "/lib/systemd/system/red5pro.service"
 }
 
 export LC_ALL="en_US.UTF-8"

@@ -1,4 +1,4 @@
-## Single Red5 Pro server deployment (single) - [Example](https://github.com/red5pro/terraform-do-red5pro/)
+## Single Red5 Pro server deployment (single) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/main/example/single)
 
 * **VPC** - This Terrform module can either create a new or use your existing VPC. If you wish to create a new VPC, set `vpc_create` to `true`, and the script will ignore the other VPC configurations. To use your existing VPC, set `vpc_create` to `false` and include your existing vpc name.
 * **Firewall** - This Terrform module create a new Firewall in Digital Ocean.

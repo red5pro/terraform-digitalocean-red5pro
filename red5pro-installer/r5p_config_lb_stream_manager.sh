@@ -22,17 +22,12 @@ log() {
 
 config_sm_properties_do(){
     log_i "Start configuration for Load balancer Stream Manager properties for Digital Ocean (DO)"
-    
     if [ -z "$LB_SM_IP" ]; then
         log_w "Variable LB_SM_IP is empty."
-        var_error=1
-    fi
-    if [[ "$var_error" == "1" ]]; then
-        log_e "One or more variables are empty. EXIT!"
         exit 1
     fi
     
-    local streammanager_ip_pattern='streammanager.ip=.*'
+    local streammanager_ip_pattern='streammanager.ip='
     local streammanager_ip_new="streammanager.ip=${LB_SM_IP}"
     
     sed -i -e "s|$streammanager_ip_pattern|$streammanager_ip_new|"  "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"

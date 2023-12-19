@@ -21,6 +21,13 @@
 # NODE_ROUND_TRIP_AUTH_ENDPOINT_VALIDATE="/validateCredentials"
 # NODE_ROUND_TRIP_AUTH_ENDPOINT_INVALIDATE="/invalidateCredentials"
 
+# NODE_CLOUDSTORAGE_ENABLE=true
+# NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_ACCESS_KEY=
+# NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_SECRET_KEY=
+# NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME=
+# NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION=
+# NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE=false
+
 RED5_HOME="/usr/local/red5pro"
 
 log_i() {
@@ -131,6 +138,60 @@ config_node_apps_plugins(){
             rm $RED5_HOME/plugins/red5pro-client-suppressor*
         fi
     fi
+    ### VOD via Cloud Storage
+    if [[ "$NODE_CLOUDSTORAGE_ENABLE" == "true" ]]; then
+        log_i "Red5Pro Digital Ocean Cloudstorage plugin - enable"
+        if [ -z "$NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_ACCESS_KEY" ]; then
+            log_e "Parameter NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_ACCESS_KEY is empty. EXIT."
+            exit 1
+        fi
+        if [ -z "$NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_SECRET_KEY" ]; then
+            log_e "Parameter NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_SECRET_KEY is empty. EXIT."
+            exit 1
+        fi
+        if [ -z "$NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME" ]; then
+            log_e "Parameter NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME is empty. EXIT."
+            exit 1
+        fi
+        if [ -z "$NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION" ]; then
+            log_e "Parameter NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION is empty. EXIT."
+            exit 1
+        fi
+
+        log_i "Config Digital Ocean Cloudstorage plugin: $RED5_HOME/conf/cloudstorage-plugin.properties"
+        do_service="#services=com.red5pro.media.storage.digitalocean.DOUploader,com.red5pro.media.storage.digitalocean.DOBucketLister"
+        do_service_new="services=com.red5pro.media.storage.digitalocean.DOUploader,com.red5pro.media.storage.digitalocean.DOBucketLister"
+        max_transcode_min="max.transcode.minutes=.*"
+        max_transcode_min_new="max.transcode.minutes=30"
+
+        do_spaces_access_key="do.access.key=.*"
+        do_spaces_access_key_new="do.access.key=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_ACCESS_KEY}"
+        do_spaces_secret_key="do.secret.access.key=.*"
+        do_spaces_secret_key_new="do.secret.access.key=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_SECRET_KEY}"
+        do_spaces_bucket_name="do.bucket.name=.*"
+        do_spaces_bucket_name_new="do.bucket.name=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME}"
+        do_spaces_region="do.bucket.location=.*"
+        do_spaces_region_new="do.bucket.location=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION}"
+
+
+        sed -i -e "s|$do_service|$do_service_new|" -e "s|$max_transcode_min|$max_transcode_min_new|" -e "s|$do_spaces_access_key|$do_spaces_access_key_new|" -e "s|$do_spaces_secret_key|$do_spaces_secret_key_new|" -e "s|$do_spaces_bucket_name|$do_spaces_bucket_name_new|" -e "s|$do_spaces_region|$do_spaces_region_new|" "$RED5_HOME/conf/cloudstorage-plugin.properties"
+
+        if [[ "$NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE" == "true" ]]; then
+            log_i "Config Digital Ocean Cloudstorage plugin - PostProcessor to FLV: $RED5_HOME/conf/red5-common.xml"
+
+            STR1='<property name="writerPostProcessors">\n<set>\n<value>com.red5pro.media.processor.DOUploaderPostProcessor</value>\n</set>\n</property>'
+            sed -i "/Writer post-process example/i $STR1" "$RED5_HOME/conf/red5-common.xml"
+        fi
+
+        log_i "Config Digital Ocean Cloudstorage plugin - Live app DOFilenameGenerator in: $RED5_HOME/webapps/live/WEB-INF/red5-web.xml ..."
+
+        local filenamegenerator='<bean id="streamFilenameGenerator" class="com.red5pro.media.storage.digitalocean.DOFilenameGenerator"/>'
+        local filenamegenerator_new='-->\n<bean id="streamFilenameGenerator" class="com.red5pro.media.storage.digitalocean.DOFilenameGenerator"/>\n<!--'
+        sed -i -e "s|$filenamegenerator|$filenamegenerator_new|" "$RED5_HOME/webapps/live/WEB-INF/red5-web.xml"
+    else
+        log_d "Red5Pro Digital Ocean Cloudstorage plugin (Spaces) - disable"
+    fi
+
     ### Red5Pro Webhooks
     if [[ "$NODE_WEBHOOKS_ENABLE" == "true" ]]; then
         log_i "Red5Pro Webhooks - enable"

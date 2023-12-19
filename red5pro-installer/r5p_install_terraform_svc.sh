@@ -177,13 +177,16 @@ start_terraform_service(){
     
 }
 
+if [[ "$TF_SVC_ENABLE" == true ]]; then
+    log_i "TF_SVC_ENABLE is set to true, Installing Red5 Pro Terraform Service..."
+    export LC_ALL="en_US.UTF-8"
+    export LC_CTYPE="en_US.UTF-8"
 
-export LC_ALL="en_US.UTF-8"
-export LC_CTYPE="en_US.UTF-8"
-
-check_terraform_variables
-install_pkg
-install_terraform_service
-config_terraform_service
-start_terraform_service
-
+    check_terraform_variables
+    install_pkg
+    install_terraform_service
+    config_terraform_service
+    start_terraform_service
+else
+    log_i "SKIP Red5 Pro Terraform Service installation."
+fi

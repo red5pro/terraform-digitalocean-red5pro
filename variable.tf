@@ -60,6 +60,11 @@ variable "digital_ocean_token" {
 }
 
 # VPC configuration
+variable "vpc_cidr_block" {
+  description = "Digital Ocean VPC IP range for Red5 Pro"
+  type        = string
+  default     = "10.5.0.0/16"
+}
 variable "vpc_create" {
   description = "Create a new VPC or use an existing one. true = create new, false = use existing"
   type        = bool
@@ -72,17 +77,17 @@ variable "vpc_name_existing" {
 }
 
 # Red5 Pro Terraform Service properties
-variable "dedicated_terra_host_create" {
+variable "dedicated_terraform_service_host_create" {
   description = "Create a dedicated DO droplet for Red5 pro Terraform Service "
   type        = bool
   default     = true
 }
-variable "terra_api_token" {
+variable "terraform_service_api_token" {
   description = "API Token for Teraform Service to autherize the APIs"
   type        = string
   default     = ""
 }
-variable "terra_parallelism" {
+variable "terraform_service_parallelism" {
   description = "Number of Terraform concurrent operations and used for non-standard rate limiting"
   type        = string
   default     = "20"
@@ -284,10 +289,10 @@ variable "outbound_rules" {
 }
 
 # Load Balancer Configuration
-variable "lb_size_count" {
-  description = " The size of the Load Balancer. It must be in the range (1, 100)."
-  type = number
-  default = 2
+variable "lb_size" {
+  description = " The size of the Load Balancer.  It must be either lb-small, lb-medium, or lb-large."
+  type = string
+  default = ""
 }
 
 variable "lb_ssl_create" {
@@ -363,6 +368,26 @@ variable "mysql_password" {
   type        = string
   default     = ""
   sensitive = true
+  # validation {
+  #   condition = length(var.mysql_password) >= 8
+  #   error_message = "Password must have at least 8 characters."
+  # }
+  # validation {
+  #   condition = can(regex("[A-Z]", var.mysql_password))
+  #   error_message = "Password must contain at least one uppercase letter."
+  # }
+  # validation {
+  #   condition = can(regex("[a-z]", var.mysql_password))
+  #   error_message = "Password must contain at least one lowercase letter."
+  # }
+  # validation {
+  #   condition = can(regex("[^a-zA-Z0-9]", var.mysql_password))
+  #   error_message = "Password must contain at least one character that isn't a letter or a digit."
+  # }
+  # validation {
+  #   condition = can(regex("[0-9]", var.mysql_password))
+  #   error_message = "Password must contain at least one digit."
+  # }
 }
 variable "mysql_port" {
   description = "MySQL port if mysql_database_create = false"
@@ -389,6 +414,15 @@ variable "ssh_private_key_path" {
 }
 
 # Stream Manager Configuration
+variable "autoscale_stream_manager_count" {
+  description = "Total number stream manager required to setup in autoscale."
+  type        = number
+  default     = 2
+  validation {
+    condition     = var.autoscale_stream_manager_count >= 2
+    error_message = "The stream manager count should be greater than or equal to '2'. The default count is '2'."
+  }
+}
 variable "stream_manager_droplet_size" {
   description = "Red5 Pro Stream Manager server droplet size"
   type        = string
@@ -859,4 +893,159 @@ variable "node_group_relays_capacity" {
   description = "Connections capacity for Relays"
   type        = number
   default     = 30
+}
+
+
+# Video on demand using Cloud Storage
+variable "red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+variable "origin_red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "origin_red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "origin_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "origin_red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "origin_red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "origin_red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+
+variable "edge_red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "edge_red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "edge_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "edge_red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "edge_red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "edge_red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+variable "transcoder_red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "transcoder_red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "transcoder_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "transcoder_red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "transcoder_red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "transcoder_red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+
+variable "relay_red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "relay_red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "relay_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "relay_red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "relay_red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "relay_red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
 }
