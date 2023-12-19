@@ -41,7 +41,7 @@ module "red5pro_autoscale" {
   # Stream Manager Configuration
   autoscale_stream_manager_count = 2                                                        # Total number stream manager required to setup in autoscale.
   stream_manager_droplet_size = "c-4"                                                       # Stream Manager droplet size
-  stream_manager_api_key      = "sm-api-key"                                                          # Stream Manager api key
+  stream_manager_api_key      = ""                                                          # Stream Manager api key
 
   # Database Configuration
   mysql_database_size       = "db-s-1vcpu-2gb"                                              # New MysQL database size
@@ -54,9 +54,9 @@ module "red5pro_autoscale" {
   # Load Balancer configuration for Stream Manager
   lb_ssl_create               = false                                                        # Create a new SSL certificate for Load Balancer created in DO (autoscaling)
   lb_size                     = "lb-small"                                                   # The size of the Load Balancer. It must be either lb-small, lb-medium, or lb-large
-  cert_fullchain              = "./fullchain.pem"                                    # Only If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS CA Certificate Fullchain (autoscaling)
-  cert_private_key            = "./privkey.pem"                                      # Only If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS Certificate Private Key (autoscaling)
-  leaf_public_cert            = "./cert.pem"                                         # Only If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS Certificate Public Cert (autoscaling)
+  cert_fullchain              = "./fullchain.pem"                                    # Only If 'lb_ssl_create' = true  File path for SSL/TLS CA Certificate Fullchain (autoscaling)
+  cert_private_key            = "./privkey.pem"                                      # Only If 'lb_ssl_create' = true  File path for SSL/TLS Certificate Private Key (autoscaling)
+  leaf_public_cert            = "./cert.pem"                                         # Only If 'lb_ssl_create' = true  File path for SSL/TLS Certificate Public Cert (autoscaling)
 
   # Red5 Pro general configuration
   red5pro_license_key                           = "1111-2222-3333-4444"                      # Red5 Pro license key (https://account.red5pro.com/login)
