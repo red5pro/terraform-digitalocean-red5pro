@@ -52,8 +52,8 @@ module "red5pro_autoscale" {
   terraform_service_droplet_size          = "c-4"                                                    # Terraform droplet size 
 
   # Load Balancer configuration for Stream Manager
+  lb_size                     = "lb-small"                                                   # The size of the Load Balancer. It must be either lb-small, lb-medium, or lb-large  
   lb_ssl_create               = false                                                        # Create a new SSL certificate for Load Balancer created in DO (autoscaling)
-  lb_size                     = "lb-small"                                                   # The size of the Load Balancer. It must be either lb-small, lb-medium, or lb-large
   cert_fullchain              = "./fullchain.pem"                                    # Only If 'lb_ssl_create' = true  File path for SSL/TLS CA Certificate Fullchain (autoscaling)
   cert_private_key            = "./privkey.pem"                                      # Only If 'lb_ssl_create' = true  File path for SSL/TLS Certificate Private Key (autoscaling)
   leaf_public_cert            = "./cert.pem"                                         # Only If 'lb_ssl_create' = true  File path for SSL/TLS Certificate Public Cert (autoscaling)

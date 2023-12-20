@@ -293,6 +293,10 @@ variable "lb_size" {
   description = " The size of the Load Balancer.  It must be either lb-small, lb-medium, or lb-large."
   type = string
   default = ""
+  validation {
+    condition     = var.lb_size == "lb-small" || var.lb_size == "lb-medium" || var.lb_size == "lb-large"
+    error_message = "The value must be a valid! Example: lb-small, lb-medium, lb-large"
+  }
 }
 
 variable "lb_ssl_create" {
