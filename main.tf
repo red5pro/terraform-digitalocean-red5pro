@@ -348,7 +348,7 @@ resource "digitalocean_droplet" "red5pro_autoscale_sm" {
       "cd /home/red5pro-installer/",
       "sudo chmod +x /home/red5pro-installer/*.sh",
       "sudo -E /home/red5pro-installer/r5p_config_lb_stream_manager.sh",
-      "sudo systemctl daemon-reload && sudo systemctl start red5pro",
+      "sudo systemctl daemon-reload && sudo systemctl restart red5pro",
       "sleep 2"
     ]
     connection {
