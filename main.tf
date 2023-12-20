@@ -316,7 +316,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
       "sudo -E /home/red5pro-installer/r5p_install_mysql_local.sh",
       "sudo -E /home/red5pro-installer/r5p_install_terraform_svc.sh",
       "sudo -E /home/red5pro-installer/r5p_config_stream_manager.sh",
-      # "sudo systemctl daemon-reload && sudo systemctl start red5pro",
+      "sudo systemctl daemon-reload && sudo systemctl start red5pro",
       "nohup sudo -E /home/red5pro-installer/r5p_ssl_check_install.sh >> /home/red5pro-installer/r5p_ssl_check_install.log &",
       "sleep 2"
 
