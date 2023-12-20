@@ -339,7 +339,6 @@ resource "digitalocean_droplet" "red5pro_autoscale_sm" {
   image    = digitalocean_droplet_snapshot.sm-snapshot[0].id
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc
-  graceful_shutdown = true
 
   provisioner "remote-exec" {
     inline = [
@@ -492,8 +491,8 @@ resource "digitalocean_loadbalancer" "red5pro_lb" {
   size   = var.lb_size
 
   forwarding_rule {
-    entry_port     = 443
-    entry_protocol = "https"
+    entry_port     = var.lb_ssl_create ? 443 : 5080
+    entry_protocol = var.lb_ssl_create ? "https" : "http"
 
     target_port     = var.https_letsencrypt_enable ? 443 : 5080
     target_protocol = var.https_letsencrypt_enable ? "https" : "http"
@@ -529,10 +528,10 @@ resource "digitalocean_loadbalancer" "red5pro_lb" {
 resource "digitalocean_certificate" "new_lb_cert" {
   count            = var.lb_ssl_create && local.autoscaling ? 1 : 0
   name             = "${var.name}-lb-ssl-cert"
-  type             = var.lb_ssl_certificate_type
+  type             = "custom"
 
-  private_key      = file(var.cert_private_key)
-  leaf_certificate = file(var.leaf_public_cert)
+  private_key       = file(var.cert_private_key)
+  leaf_certificate  = file(var.leaf_public_cert)
   certificate_chain = file(var.cert_fullchain)
 
   lifecycle {

@@ -99,7 +99,7 @@ module "red5pro_cluster" {
   # Edge node configuration
   node_group_edges               = 1                                                       # Number of Edges
   node_group_edges_droplet_type = "c-4"                                                    # Edges DO droplet 
-  node_group_edges_capacity      = 30                                                     # Connections capacity for Edges
+  node_group_edges_capacity      = 300                                                     # Connections capacity for Edges
   # Transcoder node configuration
   node_group_transcoders               = 1                                                 # Number of Transcoders
   node_group_transcoders_droplet_type = "c-4"                                              # Transcoders DO droplet 

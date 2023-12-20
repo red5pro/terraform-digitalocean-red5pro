@@ -58,7 +58,7 @@ cp ~/Downloads/terraform-service-0.0.0.zip ./
 
 ```hcl
 provider "digitalocean" {
-  token                     = ""                                                             # Digital Ocean token
+  token                     = ""                                                             # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
 }
 
 module "red5pro_single" {
@@ -106,6 +106,7 @@ module "red5pro_single" {
   red5pro_round_trip_auth_protocol              = "http"                                     # Round trip authentication server protocol
   red5pro_round_trip_auth_endpoint_validate     = "/validateCredentials"                     # Round trip authentication server endpoint for validate
   red5pro_round_trip_auth_endpoint_invalidate   = "/invalidateCredentials"                   # Round trip authentication server endpoint for invalidate
+    
   # Video on demand via Cloud Storage
   red5pro_cloudstorage_enable                             = false                            # Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)
   red5pro_cloudstorage_digitalocean_spaces_access_key     = ""                               # Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)
@@ -114,6 +115,11 @@ module "red5pro_single" {
   red5pro_cloudstorage_digitalocean_spaces_region         = "blr1"                           # Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces) (Valid locations are: ams3, fra1, nyc3, sfo3, sgp1)
   red5pro_cloudstorage_postprocessor_enable               = true                             # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)
 
+}
+
+output "module_output" {
+  sensitive = true
+  value = module.red5pro_single
 }
 ```
 
@@ -137,12 +143,12 @@ module "red5pro_single" {
 
 ```hcl
 provider "digitalocean" {
-  token                     = ""                                                            # Digital Ocean token
+  token                     = ""                                                            # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
 }
 
 module "red5pro_cluster" {
   source                    = "../../"
-  digital_ocean_token       = ""                                                             # Digital Ocean token
+  digital_ocean_token       = ""                                                             # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
   digital_ocean_region      = "blr1"                                                             # Digital Ocean region where resources will create eg: blr1
   type                      = "cluster"                                                      # Deployment type: single, cluster, autoscaling
   name                      = ""                                                             # Name to be used on all the resources as identifier
@@ -225,7 +231,7 @@ module "red5pro_cluster" {
   # Edge node configuration
   node_group_edges               = 1                                                       # Number of Edges
   node_group_edges_droplet_type = "c-4"                                                    # Edges DO droplet 
-  node_group_edges_capacity      = 30                                                      # Connections capacity for Edges
+  node_group_edges_capacity      = 300                                                     # Connections capacity for Edges
   # Transcoder node configuration
   node_group_transcoders               = 1                                                 # Number of Transcoders
   node_group_transcoders_droplet_type = "c-4"                                              # Transcoders DO droplet 
@@ -235,6 +241,11 @@ module "red5pro_cluster" {
   node_group_relays_droplet_type = "c-4"                                                   # Relays DO droplet 
   node_group_relays_capacity      = 30                                                     # Connections capacity for Relays
 
+}
+
+output "module_output" {
+  sensitive = true
+  value = module.red5pro_cluster
 }
 ```
 
@@ -260,13 +271,13 @@ module "red5pro_cluster" {
 
 ```hcl
 provider "digitalocean" {
-  token                     = ""                                                           # Digital Ocean token
+  token                     = ""                                                           # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
 }
 
 module "red5pro_autoscale" {
   source                    = "../../"
-  digital_ocean_token       = ""                                                            # Digital Ocean token
-  digital_ocean_region      = "blr1"                                                            # Digital Ocean region where resources will create eg: blr1
+  digital_ocean_token       = ""                                                            # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
+  digital_ocean_region      = "blr1"                                                        # Digital Ocean region where resources will create eg: blr1
   type                      = "autoscaling"                                                 # Deployment type: single, cluster, autoscaling
   name                      = ""                                                            # Name to be used on all the resources as identifier
   digital_ocean_project     = true                                                          # Create a new project in Digital Ocean
@@ -274,17 +285,17 @@ module "red5pro_autoscale" {
   ubuntu_version            = "20.04"                                                       # The version of ubuntu which is used to create droplet, it can either be 20.04 or 22.04
 
   path_to_red5pro_build     = "./red5pro-server-0.0.0.0-release.zip"                        # Absolute path or relative path to Red5 Pro server ZIP file
-  path_to_terraform_cloud_controller = "./terraform-cloud-controller-0.0.jar"               # Absolute path or relative path to terraform cloud controller jar file
+  path_to_terraform_cloud_controller = "./terraform-cloud-controller-0.0.0.jar"             # Absolute path or relative path to terraform cloud controller jar file
   path_to_terraform_service_build = "./terraform-service-0.0.0.zip"                         # Absolute path or relative path to terraform service ZIP file
 
   # SSH key configuration
-  ssh_key_create            = false                                                         # true - create new SSH key, false - use existing SSH key
+  ssh_key_create            = true                                                          # true - create new SSH key, false - use existing SSH key
   ssh_key_name              = "example_key"                                                 # Name for new SSH key or for existing SSH key
   ssh_private_key_path      = "./example_key.pem"                                           # Path to existing SSH private key
   
   # VPC configuration
+  vpc_create                = true                                                          # true - create new VPC, false - use existing VPC
   vpc_cidr_block            = "10.5.0.0/16"                                                 # VPC CIDR value for Digital Ocean
-  vpc_create                = false                                                         # true - create new VPC, false - use existing VPC
   vpc_name_existing         = "example-vpc"                                                 # VPC name of existing VPC if vpc_create is false
 
   # Stream Manager Configuration
@@ -301,15 +312,11 @@ module "red5pro_autoscale" {
   terraform_service_droplet_size          = "c-4"                                                    # Terraform droplet size 
 
   # Load Balancer configuration for Stream Manager
-  lb_ssl_create               = true                                                         # Create a new SSL certificate for Load Balancer created in DO (autoscaling)
-  lb_ssl_certificate_type     = "custom"                                                     # If 'lb_ssl_create' = true, define the type of new SSL certificate. Only 'custom' or 'lets_encrypt'. In the case of 'custom' specify the path of keys in below variables[cert_fullchain, cert_private_key, leaf_public_cert], in 'lets_encrypt' specify the already created domain name for SSL create.
-  existing_lb_domain_name     = "example.com"                                                # Only required when 'lb_ssl_certificate_type' = lets_encrypt
-  lb_size_count               = 2                                                            # The size of the Load Balancer. It must be in the range (1, 100).
-  lb_exist_ssl_cert_name      = ""                                                           # If 'lb_ssl_create' = false, Use existing SSL certificate for Load Balancer already uploaded in DO (autoscaling)
-  new_lb_cert_name            = ""                                                           # Only If 'lb_ssl_create' = true, New Load Balancer certificate name
-  cert_fullchain              = "./path_to/fullchain.pem"                                    # Only If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS CA Certificate Fullchain (autoscaling)
-  cert_private_key            = "./path_to/privkey.pem"                                      # Only If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS Certificate Private Key (autoscaling)
-  leaf_public_cert            = "./path_to/cert.pem"                                         # Only If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS Certificate Public Cert (autoscaling)
+  lb_ssl_create               = false                                                        # Create a new SSL certificate for Load Balancer created in DO (autoscaling)
+  lb_size                     = "lb-small"                                                   # The size of the Load Balancer. It must be either lb-small, lb-medium, or lb-large
+  cert_fullchain              = "./fullchain.pem"                                    # Only If 'lb_ssl_create' = true  File path for SSL/TLS CA Certificate Fullchain (autoscaling)
+  cert_private_key            = "./privkey.pem"                                      # Only If 'lb_ssl_create' = true  File path for SSL/TLS Certificate Private Key (autoscaling)
+  leaf_public_cert            = "./cert.pem"                                         # Only If 'lb_ssl_create' = true  File path for SSL/TLS Certificate Public Cert (autoscaling)
 
   # Red5 Pro general configuration
   red5pro_license_key                           = "1111-2222-3333-4444"                      # Red5 Pro license key (https://account.red5pro.com/login)
@@ -353,9 +360,9 @@ module "red5pro_autoscale" {
   node_group_origins_droplet_type = "c-4"                                                  # Origins DO droplet 
   node_group_origins_capacity      = 30                                                    # Connections capacity for Origins
   # Edge node configuration
-  node_group_edges               = 0                                                       # Number of Edges
+  node_group_edges               = 1                                                       # Number of Edges
   node_group_edges_droplet_type = "c-4"                                                    # Edges DO droplet 
-  node_group_edges_capacity      = 30                                                      # Connections capacity for Edges
+  node_group_edges_capacity      = 300                                                     # Connections capacity for Edges
   # Transcoder node configuration
   node_group_transcoders               = 0                                                 # Number of Transcoders
   node_group_transcoders_droplet_type = "c-4"                                              # Transcoders DO droplet 
@@ -364,7 +371,14 @@ module "red5pro_autoscale" {
   node_group_relays               = 0                                                      # Number of Relays
   node_group_relays_droplet_type = "c-4"                                                   # Relays DO droplet 
   node_group_relays_capacity      = 30                                                     # Connections capacity for Relays
+
 }
+
+output "module_output" {
+  sensitive = true
+  value = module.red5pro_autoscale
+}
+
 ```
 
 ---

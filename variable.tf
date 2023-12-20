@@ -301,48 +301,20 @@ variable "lb_ssl_create" {
   default = true
 }
 
-variable "lb_ssl_certificate_type" {
-  description = "Type of certificate to create SSL for Load Balancer in Digital Ocean(custom or lets_encrypt)"
-  type        = string
-  default     = "custom"
-  validation {
-    condition     = var.lb_ssl_certificate_type == "custom" || var.lb_ssl_certificate_type == "lets_encrypt"
-    error_message = "The type value must be a valid! Example: custom or lets_encrypt"
-  }
-}
-
-variable "existing_lb_domain_name" {
-  description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = lets_encrypt, Load balancer exiting fully qualified domain names (FQDNs) for which the certificate will be issued. Only when 'lb_ssl_certificate_type' == lets_encrypt"
-  type = string
-  default = ""
-}
-
-variable "lb_exist_ssl_cert_name" {
-   description = "If 'lb_ssl_create' = false, Use existing SSL certificate for Load Balancer already uploaded in DO (autoscaling)"
-   type = string
-   default = ""
-}
-
-variable "new_lb_cert_name" {
-  description = "If 'lb_ssl_create' = true, New Load Balancer certificate name"
-  type = string
-  default = ""
-}
-
 variable "cert_fullchain" {
-  description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS CA Certificate Fullchain (autoscaling)"
+  description = "If 'lb_ssl_create' = true File path for SSL/TLS CA Certificate Fullchain (autoscaling)"
   type        = string
   default     = ""
 }
 
 variable "cert_private_key" {
-  description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS Certificate Private Key (autoscaling)"
+  description = "If 'lb_ssl_create' = true File path for SSL/TLS Certificate Private Key (autoscaling)"
   type        = string
   default     = ""
 }
 
 variable "leaf_public_cert" {
-  description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS Certificate Public Cert (autoscaling)"
+  description = "If 'lb_ssl_create' = true File path for SSL/TLS Certificate Public Cert (autoscaling)"
   type        = string
   default     = ""
 }

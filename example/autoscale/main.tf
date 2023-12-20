@@ -34,8 +34,8 @@ module "red5pro_autoscale" {
   ssh_private_key_path      = "./example_key.pem"                                           # Path to existing SSH private key
   
   # VPC configuration
-  vpc_cidr_block            = "10.5.0.0/16"                                                 # VPC CIDR value for Digital Ocean
   vpc_create                = true                                                          # true - create new VPC, false - use existing VPC
+  vpc_cidr_block            = "10.5.0.0/16"                                                 # VPC CIDR value for Digital Ocean
   vpc_name_existing         = "example-vpc"                                                 # VPC name of existing VPC if vpc_create is false
 
   # Stream Manager Configuration
@@ -102,7 +102,7 @@ module "red5pro_autoscale" {
   # Edge node configuration
   node_group_edges               = 1                                                       # Number of Edges
   node_group_edges_droplet_type = "c-4"                                                    # Edges DO droplet 
-  node_group_edges_capacity      = 30                                                     # Connections capacity for Edges
+  node_group_edges_capacity      = 300                                                     # Connections capacity for Edges
   # Transcoder node configuration
   node_group_transcoders               = 0                                                 # Number of Transcoders
   node_group_transcoders_droplet_type = "c-4"                                              # Transcoders DO droplet 
