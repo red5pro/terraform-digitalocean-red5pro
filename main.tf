@@ -3,7 +3,6 @@ locals {
   cluster                          = var.type == "cluster" ? true : false
   autoscaling                      = var.type == "autoscaling" ? true : false
   cluster_or_autoscaling           = local.cluster || local.autoscaling ? true : false
-  ubuntu_image_version             = var.ubuntu_version == "20.04" ? "ubuntu-20-04-x64" : "ubuntu-22-04-x64"
   ssh_key                          = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].fingerprint : data.digitalocean_ssh_key.ssh_key_pair[0].id
   ssh_key_name                     = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].name : data.digitalocean_ssh_key.ssh_key_pair[0].name
   ssh_private_key                  = var.ssh_key_create ? tls_private_key.red5pro_ssh_key[0].private_key_pem : file(var.ssh_private_key_path)
@@ -135,7 +134,7 @@ resource "digitalocean_droplet" "red5pro_single" {
   name     = "${var.name}-red5-single"
   region   = var.digital_ocean_region
   size     = var.single_droplet_size
-  image    = local.ubuntu_image_version
+  image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
 
@@ -266,7 +265,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
   name     = "${var.name}-red5-sm"
   region   = var.digital_ocean_region
   size     = var.stream_manager_droplet_size
-  image    = local.ubuntu_image_version
+  image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
 
@@ -416,7 +415,7 @@ resource "digitalocean_droplet" "red5pro_terraform_service" {
   name     = "${var.name}-red5-terraform-service"
   region   = var.digital_ocean_region
   size     = var.terraform_service_droplet_size
-  image    = local.ubuntu_image_version
+  image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
 
@@ -563,7 +562,7 @@ resource "digitalocean_droplet" "red5pro_origin_node" {
   name     = "${var.name}-node-origin-image"
   region   = var.digital_ocean_region
   size     = var.origin_image_droplet_size
-  image    = local.ubuntu_image_version
+  image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
 
@@ -634,7 +633,7 @@ resource "digitalocean_droplet" "red5pro_edge_node" {
   name     = "${var.name}-node-edge-image"
   region   = var.digital_ocean_region
   size     = var.edge_image_droplet_size
-  image    = local.ubuntu_image_version
+  image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
 
@@ -705,7 +704,7 @@ resource "digitalocean_droplet" "red5pro_transcoder_node" {
   name     = "${var.name}-node-transcoder-image"
   region   = var.digital_ocean_region
   size     = var.transcoder_image_droplet_size
-  image    = local.ubuntu_image_version
+  image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
 
@@ -776,7 +775,7 @@ resource "digitalocean_droplet" "red5pro_relay_node" {
   name     = "${var.name}-node-relay-image"
   region   = var.digital_ocean_region
   size     = var.relay_image_droplet_size
-  image    = local.ubuntu_image_version
+  image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
 

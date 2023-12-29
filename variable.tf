@@ -1025,3 +1025,16 @@ variable "relay_red5pro_cloudstorage_postprocessor_enable" {
   type        = bool
   default     = false
 }
+variable "ubuntu_image_version" {
+  type = map(string)
+  default = {
+    18.04 = "ubuntu-18-04-x64"
+    20.04 = "ubuntu-20-04-x64"
+    22.04 = "ubuntu-22-04-x64"
+  }
+}
+variable "ubuntu_version" {
+  description = "Ubuntu version"
+  type        = string
+  default     = "22.04"
+}
