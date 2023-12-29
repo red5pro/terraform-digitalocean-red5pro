@@ -8,13 +8,13 @@ variable "name" {
   }
 }
 
-variable "digital_ocean_project" {
-  description = "Create a new project in Digital Ocean to access all created resources. true = create new project, false = use default project in DO."
+variable "project_create" {
+  description = "Create a new project in Digital Ocean to access all created resources. true = create new project, false = use existing project in DO."
   default = true
 }
 
 variable "project_name" {
-  description = "A unique project used in digital ocean to create all resources. When do_project = true"
+  description = "A unique project used in digital ocean to create all resources. When project_create = true or existing project name. When project_create = false."
   type = string
   default = ""
 }

@@ -29,8 +29,31 @@ locals {
 ################################################################################
 # PROJECT SETUP IN DIGITAL OCEAN
 ################################################################################
+
+data "digitalocean_project" "do_project" {
+  count = var.project_create ? 0 : 1
+  name  = var.project_name
+}
+
+resource "digitalocean_project_resources" "do_project" {
+  count       = var.project_create ? 0 : 1
+  project     = data.digitalocean_project.do_project[0].id
+  resources   = concat(
+    [ local.single ? digitalocean_droplet.red5pro_single[0].urn : "" ],
+    [ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ],
+    [ local.mysql_db_system_create ? digitalocean_database_cluster.red5pro_mysql[0].urn : "" ],
+    [ local.dedicated_terraform_host_create ? digitalocean_droplet.red5pro_terraform_service[0].urn : "" ],
+    [ var.origin_image_create ? digitalocean_droplet.red5pro_origin_node[0].urn : "" ],
+    [ var.edge_image_create ? digitalocean_droplet.red5pro_edge_node[0].urn : "" ],
+    [ var.transcoder_image_create ? digitalocean_droplet.red5pro_transcoder_node[0].urn : "" ],
+    [ var.relay_image_create ? digitalocean_droplet.red5pro_relay_node[0].urn : "" ],
+    [ local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].urn : "" ],
+      local.autoscale_sm_droplet_urn
+  )
+}
+
 resource "digitalocean_project" "do_project" {
-  count       = var.digital_ocean_project ? 1 : 0
+  count       = var.project_create ? 1 : 0
   name        = var.project_name
   purpose     = "${var.name}-Red5Pro Deployments"
   environment = "Production"
