@@ -894,7 +894,7 @@ resource "null_resource" "stop_stream_manager" {
   depends_on     = [digitalocean_droplet_snapshot.sm-snapshot]
 }
 # Stop Origin Node droplet using DO CLI
-resource "null_resource" "stop_node_origin" {
+resource "null_resource" "delete_node_origin" {
   count = local.cluster_or_autoscaling && var.origin_image_create ? 1 : 0
   provisioner "local-exec" {
     command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_origin_node[0].id} -f --access-token ${var.digital_ocean_token}"
@@ -902,7 +902,7 @@ resource "null_resource" "stop_node_origin" {
   depends_on     = [digitalocean_droplet_snapshot.origin-snapshot]
 }
 # Stop Edge Node droplet using DO CLI
-resource "null_resource" "stop_node_edge" {
+resource "null_resource" "delete_node_edge" {
   count = local.cluster_or_autoscaling && var.edge_image_create ? 1 : 0
   provisioner "local-exec" {
     command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_edge_node[0].id} -f --access-token ${var.digital_ocean_token}"
@@ -910,7 +910,7 @@ resource "null_resource" "stop_node_edge" {
   depends_on     = [digitalocean_droplet_snapshot.edge-snapshot]
 }
 # Stop Transcoder Node droplet using DO CLI
-resource "null_resource" "stop_node_transcoder" {
+resource "null_resource" "delete_node_transcoder" {
   count = local.cluster_or_autoscaling && var.transcoder_image_create ? 1 : 0
   provisioner "local-exec" {
     command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_transcoder_node[0].id} -f --access-token ${var.digital_ocean_token}"
@@ -918,7 +918,7 @@ resource "null_resource" "stop_node_transcoder" {
   depends_on     = [digitalocean_droplet_snapshot.transcoder-snapshot]
 }
 # Stop Relay Node droplet using DO CLI
-resource "null_resource" "stop_node_relay" {
+resource "null_resource" "delete_node_relay" {
   count = local.cluster_or_autoscaling && var.relay_image_create ? 1 : 0
   provisioner "local-exec" {
     command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_relay_node[0].id} -f --access-token ${var.digital_ocean_token}"
