@@ -7,7 +7,7 @@ locals {
   ssh_key_name                     = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].name : data.digitalocean_ssh_key.ssh_key_pair[0].name
   ssh_private_key                  = var.ssh_key_create ? tls_private_key.red5pro_ssh_key[0].private_key_pem : file(var.ssh_private_key_path)
   ssh_private_key_path             = var.ssh_key_create ? local_file.red5pro_ssh_key_pem[0].filename : var.ssh_private_key_path
-  vpc                              = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].id : data.digitalocean_vpc.selected[0].id
+  vpc_id                           = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].id : data.digitalocean_vpc.selected[0].id
   vpc_name                         = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].name : data.digitalocean_vpc.selected[0].name
   mysql_local_enable               = local.autoscaling ? false : var.mysql_database_create ? false : true
   mysql_db_system_create           = local.autoscaling ? true : local.cluster && var.mysql_database_create ? true : local.cluster && var.dedicated_terraform_service_host_create ? true : false
@@ -24,6 +24,18 @@ locals {
   lb_ip                            = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : null
   stream_manager_node_ids          = [ for autoscale_sm_droplet in digitalocean_droplet.red5pro_autoscale_sm : autoscale_sm_droplet.id ]
   autoscale_sm_droplet_urn         = [ for autoscale_sm_urn in digitalocean_droplet.red5pro_autoscale_sm : autoscale_sm_urn.urn ]
+  project_resources                = concat(
+    compact([ local.single ? digitalocean_droplet.red5pro_single[0].urn : "" ]),
+    compact([ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ]),
+    compact([ local.mysql_db_system_create ? digitalocean_database_cluster.red5pro_mysql[0].urn : "" ]),
+    compact([ local.dedicated_terraform_host_create ? digitalocean_droplet.red5pro_terraform_service[0].urn : "" ]),
+    compact([ var.origin_image_create ? digitalocean_droplet.red5pro_origin_node[0].urn : "" ]),
+    compact([ var.edge_image_create ? digitalocean_droplet.red5pro_edge_node[0].urn : "" ]),
+    compact([ var.transcoder_image_create ? digitalocean_droplet.red5pro_transcoder_node[0].urn : "" ]),
+    compact([ var.relay_image_create ? digitalocean_droplet.red5pro_relay_node[0].urn : "" ]),
+    compact([ local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].urn : "" ]),
+    compact(local.autoscale_sm_droplet_urn)
+  )
 }
 
 ################################################################################
@@ -38,18 +50,7 @@ data "digitalocean_project" "do_project" {
 resource "digitalocean_project_resources" "do_project" {
   count       = var.project_create ? 0 : 1
   project     = data.digitalocean_project.do_project[0].id
-  resources   = concat(
-    [ local.single ? digitalocean_droplet.red5pro_single[0].urn : "" ],
-    [ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ],
-    [ local.mysql_db_system_create ? digitalocean_database_cluster.red5pro_mysql[0].urn : "" ],
-    [ local.dedicated_terraform_host_create ? digitalocean_droplet.red5pro_terraform_service[0].urn : "" ],
-    [ var.origin_image_create ? digitalocean_droplet.red5pro_origin_node[0].urn : "" ],
-    [ var.edge_image_create ? digitalocean_droplet.red5pro_edge_node[0].urn : "" ],
-    [ var.transcoder_image_create ? digitalocean_droplet.red5pro_transcoder_node[0].urn : "" ],
-    [ var.relay_image_create ? digitalocean_droplet.red5pro_relay_node[0].urn : "" ],
-    [ local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].urn : "" ],
-      local.autoscale_sm_droplet_urn
-  )
+  resources   = local.project_resources
 }
 
 resource "digitalocean_project" "do_project" {
@@ -57,18 +58,7 @@ resource "digitalocean_project" "do_project" {
   name        = var.project_name
   purpose     = "${var.name}-Red5Pro Deployments"
   environment = "Production"
-  resources = concat(
-    [ local.single ? digitalocean_droplet.red5pro_single[0].urn : "" ],
-    [ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ],
-    [ local.mysql_db_system_create ? digitalocean_database_cluster.red5pro_mysql[0].urn : "" ],
-    [ local.dedicated_terraform_host_create ? digitalocean_droplet.red5pro_terraform_service[0].urn : "" ],
-    [ var.origin_image_create ? digitalocean_droplet.red5pro_origin_node[0].urn : "" ],
-    [ var.edge_image_create ? digitalocean_droplet.red5pro_edge_node[0].urn : "" ],
-    [ var.transcoder_image_create ? digitalocean_droplet.red5pro_transcoder_node[0].urn : "" ],
-    [ var.relay_image_create ? digitalocean_droplet.red5pro_relay_node[0].urn : "" ],
-    [ local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].urn : "" ],
-      local.autoscale_sm_droplet_urn
-  )
+  resources = local.project_resources
 }
 
 ################################################################################
@@ -146,7 +136,7 @@ resource "digitalocean_droplet" "red5pro_single" {
   size     = var.single_droplet_size
   image    = local.ubuntu_image_version
   ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
 
   connection {
     host        = digitalocean_droplet.red5pro_single[0].ipv4_address
@@ -277,7 +267,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
   size     = var.stream_manager_droplet_size
   image    = local.ubuntu_image_version
   ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
 
   connection {
     host        = digitalocean_droplet.red5pro_sm[0].ipv4_address
@@ -361,7 +351,7 @@ resource "digitalocean_droplet" "red5pro_autoscale_sm" {
   size     = var.stream_manager_droplet_size
   image    = digitalocean_droplet_snapshot.sm-snapshot[0].id
   ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
 
   provisioner "remote-exec" {
     inline = [
@@ -396,7 +386,7 @@ resource "digitalocean_database_cluster" "red5pro_mysql" {
   size       = var.mysql_database_size
   node_count = 1
   engine     = "mysql"
-  private_network_uuid = local.vpc
+  private_network_uuid = local.vpc_id
 }
 
 # Allowing stream manager and terraform service droplet to access the MySQL Database
@@ -427,7 +417,7 @@ resource "digitalocean_droplet" "red5pro_terraform_service" {
   size     = var.terraform_service_droplet_size
   image    = local.ubuntu_image_version
   ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
 
   connection {
     host        = digitalocean_droplet.red5pro_terraform_service[0].ipv4_address
@@ -542,7 +532,7 @@ resource "digitalocean_loadbalancer" "red5pro_lb" {
     cookie_ttl_seconds = 300
   }
 
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
   droplet_ids = local.stream_manager_node_ids
   depends_on = [ digitalocean_droplet.red5pro_autoscale_sm ]
 }
@@ -574,7 +564,7 @@ resource "digitalocean_droplet" "red5pro_origin_node" {
   size     = var.origin_image_droplet_size
   image    = local.ubuntu_image_version
   ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
 
   connection {
     host        = digitalocean_droplet.red5pro_origin_node[0].ipv4_address
@@ -645,7 +635,7 @@ resource "digitalocean_droplet" "red5pro_edge_node" {
   size     = var.edge_image_droplet_size
   image    = local.ubuntu_image_version
   ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
 
   connection {
     host        = digitalocean_droplet.red5pro_edge_node[0].ipv4_address
@@ -716,7 +706,7 @@ resource "digitalocean_droplet" "red5pro_transcoder_node" {
   size     = var.transcoder_image_droplet_size
   image    = local.ubuntu_image_version
   ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
 
   connection {
     host        = digitalocean_droplet.red5pro_transcoder_node[0].ipv4_address
@@ -787,7 +777,7 @@ resource "digitalocean_droplet" "red5pro_relay_node" {
   size     = var.relay_image_droplet_size
   image    = local.ubuntu_image_version
   ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc
+  vpc_uuid = local.vpc_id
 
   connection {
     host        = digitalocean_droplet.red5pro_relay_node[0].ipv4_address
