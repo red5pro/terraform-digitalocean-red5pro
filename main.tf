@@ -2,6 +2,7 @@ locals {
   single                           = var.type == "single" ? true : false
   cluster                          = var.type == "cluster" ? true : false
   autoscaling                      = var.type == "autoscaling" ? true : false
+  cluster_or_autoscaling           = local.cluster || local.autoscaling ? true : false
   ubuntu_image_version             = var.ubuntu_version == "20.04" ? "ubuntu-20-04-x64" : "ubuntu-22-04-x64"
   ssh_key                          = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].fingerprint : data.digitalocean_ssh_key.ssh_key_pair[0].id
   ssh_key_name                     = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].name : data.digitalocean_ssh_key.ssh_key_pair[0].name
@@ -233,7 +234,7 @@ resource "digitalocean_firewall" "red5pro_single_fw" {
 
 # Firewall for stream Manger red5pro droplet
 resource "digitalocean_firewall" "red5pro_sm_fw" {
-  count       = local.cluster || local.autoscaling ? 1 : 0
+  count       = local.cluster_or_autoscaling ? 1 : 0
   name        = "${var.name}-stream-manager-fw"
   droplet_ids = local.autoscaling ? local.stream_manager_node_ids : [digitalocean_droplet.red5pro_sm[0].id]
 
@@ -261,7 +262,7 @@ resource "digitalocean_firewall" "red5pro_sm_fw" {
 ################################################################################
 # Stream Manager droplet
 resource "digitalocean_droplet" "red5pro_sm" {
-  count    = local.cluster || local.autoscaling ? 1 : 0
+  count    = local.cluster_or_autoscaling ? 1 : 0
   name     = "${var.name}-red5-sm"
   region   = var.digital_ocean_region
   size     = var.stream_manager_droplet_size
@@ -558,7 +559,7 @@ resource "digitalocean_certificate" "new_lb_cert" {
 ################################################################################
 # Origin Node droplet for DO Custom Image
 resource "digitalocean_droplet" "red5pro_origin_node" {
-  count    = local.cluster || local.autoscaling && var.origin_image_create ? 1 : 0
+  count    = local.cluster_or_autoscaling && var.origin_image_create ? 1 : 0
   name     = "${var.name}-node-origin-image"
   region   = var.digital_ocean_region
   size     = var.origin_image_droplet_size
@@ -629,7 +630,7 @@ resource "digitalocean_droplet" "red5pro_origin_node" {
 
 # Edge Node droplet for DO Custom Image
 resource "digitalocean_droplet" "red5pro_edge_node" {
-  count    = local.cluster || local.autoscaling && var.edge_image_create ? 1 : 0
+  count    = local.cluster_or_autoscaling && var.edge_image_create ? 1 : 0
   name     = "${var.name}-node-edge-image"
   region   = var.digital_ocean_region
   size     = var.edge_image_droplet_size
@@ -700,7 +701,7 @@ resource "digitalocean_droplet" "red5pro_edge_node" {
 
 # Transcoder Node droplet for DO Custom Image
 resource "digitalocean_droplet" "red5pro_transcoder_node" {
-  count    = local.cluster || local.autoscaling && var.transcoder_image_create ? 1 : 0
+  count    = local.cluster_or_autoscaling && var.transcoder_image_create ? 1 : 0
   name     = "${var.name}-node-transcoder-image"
   region   = var.digital_ocean_region
   size     = var.transcoder_image_droplet_size
@@ -771,7 +772,7 @@ resource "digitalocean_droplet" "red5pro_transcoder_node" {
 
 # Relay Node droplet for DO Custom Image
 resource "digitalocean_droplet" "red5pro_relay_node" {
-  count    = local.cluster || local.autoscaling && var.relay_image_create ? 1 : 0
+  count    = local.cluster_or_autoscaling && var.relay_image_create ? 1 : 0
   name     = "${var.name}-node-relay-image"
   region   = var.digital_ocean_region
   size     = var.relay_image_droplet_size
@@ -852,7 +853,7 @@ resource "digitalocean_droplet_snapshot" "sm-snapshot" {
 }
 # Origin node - Create image
 resource "digitalocean_droplet_snapshot" "origin-snapshot" {
-  count          = local.cluster || local.autoscaling && var.origin_image_create ? 1 : 0
+  count          = local.cluster_or_autoscaling && var.origin_image_create ? 1 : 0
   droplet_id     = digitalocean_droplet.red5pro_origin_node[0].id
   name           = "${var.name}-node-origin-custom-image-${formatdate("DDMMMYY-hhmm", timestamp())}"
   depends_on     = [digitalocean_droplet.red5pro_origin_node]
@@ -860,7 +861,7 @@ resource "digitalocean_droplet_snapshot" "origin-snapshot" {
 
 # Edge node - Create image
 resource "digitalocean_droplet_snapshot" "edge-snapshot" {
-  count          = local.cluster || local.autoscaling && var.edge_image_create ? 1 : 0
+  count          = local.cluster_or_autoscaling && var.edge_image_create ? 1 : 0
   droplet_id     = digitalocean_droplet.red5pro_edge_node[0].id
   name           = "${var.name}-node-edge-custom-image-${formatdate("DDMMMYY-hhmm", timestamp())}"
   depends_on     = [digitalocean_droplet.red5pro_edge_node]
@@ -868,7 +869,7 @@ resource "digitalocean_droplet_snapshot" "edge-snapshot" {
 
 # Transcode node - Create image
 resource "digitalocean_droplet_snapshot" "transcoder-snapshot" {
-  count          = local.cluster || local.autoscaling && var.transcoder_image_create ? 1 : 0
+  count          = local.cluster_or_autoscaling && var.transcoder_image_create ? 1 : 0
   droplet_id     = digitalocean_droplet.red5pro_transcoder_node[0].id
   name           = "${var.name}-node-transcoder-custom-image-${formatdate("DDMMMYY-hhmm", timestamp())}"
   depends_on     = [digitalocean_droplet.red5pro_transcoder_node]
@@ -876,7 +877,7 @@ resource "digitalocean_droplet_snapshot" "transcoder-snapshot" {
 
 # Relay node - Create image
 resource "digitalocean_droplet_snapshot" "relay-snapshot" {
-  count          = local.cluster || local.autoscaling && var.relay_image_create ? 1 : 0
+  count          = local.cluster_or_autoscaling && var.relay_image_create ? 1 : 0
   droplet_id     = digitalocean_droplet.red5pro_relay_node[0].id
   name           = "${var.name}-node-relay-custom-image-${formatdate("DDMMMYY-hhmm", timestamp())}"
   depends_on     = [digitalocean_droplet.red5pro_relay_node]
@@ -895,7 +896,7 @@ resource "null_resource" "stop_stream_manager" {
 }
 # Stop Origin Node droplet using DO CLI
 resource "null_resource" "stop_node_origin" {
-  count = local.cluster || local.autoscaling && var.origin_image_create ? 1 : 0
+  count = local.cluster_or_autoscaling && var.origin_image_create ? 1 : 0
   provisioner "local-exec" {
     command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_origin_node[0].id} -f --access-token ${var.digital_ocean_token}"
   }
@@ -903,7 +904,7 @@ resource "null_resource" "stop_node_origin" {
 }
 # Stop Edge Node droplet using DO CLI
 resource "null_resource" "stop_node_edge" {
-  count = local.cluster || local.autoscaling && var.edge_image_create ? 1 : 0
+  count = local.cluster_or_autoscaling && var.edge_image_create ? 1 : 0
   provisioner "local-exec" {
     command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_edge_node[0].id} -f --access-token ${var.digital_ocean_token}"
   }
@@ -911,7 +912,7 @@ resource "null_resource" "stop_node_edge" {
 }
 # Stop Transcoder Node droplet using DO CLI
 resource "null_resource" "stop_node_transcoder" {
-  count = local.cluster || local.autoscaling && var.transcoder_image_create ? 1 : 0
+  count = local.cluster_or_autoscaling && var.transcoder_image_create ? 1 : 0
   provisioner "local-exec" {
     command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_transcoder_node[0].id} -f --access-token ${var.digital_ocean_token}"
   }
@@ -919,7 +920,7 @@ resource "null_resource" "stop_node_transcoder" {
 }
 # Stop Relay Node droplet using DO CLI
 resource "null_resource" "stop_node_relay" {
-  count = local.cluster || local.autoscaling && var.relay_image_create ? 1 : 0
+  count = local.cluster_or_autoscaling && var.relay_image_create ? 1 : 0
   provisioner "local-exec" {
     command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_relay_node[0].id} -f --access-token ${var.digital_ocean_token}"
   }
