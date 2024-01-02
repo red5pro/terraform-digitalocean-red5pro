@@ -69,3 +69,8 @@ output "node_relay_image" {
   description = "Image name of the Red5 Pro Node Relay image"
   value       = module.red5pro.node_relay_image
 }
+
+output "terraform_service_ip" {
+  description = "Terraform Service Host"
+  value = module.red5pro.terraform_service_ip
+}
