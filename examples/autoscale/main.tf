@@ -88,7 +88,7 @@ module "red5pro" {
   origin_red5pro_cloudstorage_digitalocean_spaces_secret_key     = ""                        # Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)
   origin_red5pro_cloudstorage_digitalocean_spaces_name           = "bucket-example-name"     # Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)
   origin_red5pro_cloudstorage_digitalocean_spaces_region         = "nyc1"                    # Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces) (Valid locations are: ams3, fra1, nyc3, sfo3, sgp1)
-  origin_red5pro_cloudstorage_postprocessor_enable               = true                      # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)
+  origin_red5pro_cloudstorage_postprocessor_enable               = false                     # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)
 
 # Red5 Pro autoscaling Node group - (Optional)
   node_group_create                    = true                       # Linux or Mac OS only. true - create new Stream Manager Node group, false - not create new Stream Manager Node group
