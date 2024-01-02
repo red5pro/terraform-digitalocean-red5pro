@@ -120,7 +120,7 @@ install_terraform_service(){
         exit 1
     fi
     
-    unzip "$CURRENT_DIRECTORY/$TERRA_RCHIVE" -d /usr/local/
+    unzip -q "$CURRENT_DIRECTORY/$TERRA_RCHIVE" -d /usr/local/
     
     rm $TERRA_FOLDER/*_azure*.tf
     rm $TERRA_FOLDER/*_linode*.tf
