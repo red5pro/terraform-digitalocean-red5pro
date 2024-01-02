@@ -17,7 +17,7 @@ provider "digitalocean" {
 
 module "red5pro" {
   source                     = "../../"
-  digital_ocean_region       = "nyc1"                                                        # Digital Ocean region where resources will create eg: blr1
+  digital_ocean_region       = "nyc1"                                                        # Digital Ocean region where resources will create
   ubuntu_version             = "22.04"                                                       # The version of ubuntu which is used to create droplet, it can either be 20.04 or 22.04
   type                       = "autoscaling"                                                 # Deployment type: single, cluster, autoscaling
   name                       = "red5pro-auto"                                                # Name to be used on all the resources as identifier
@@ -87,7 +87,7 @@ module "red5pro" {
   origin_red5pro_cloudstorage_digitalocean_spaces_access_key     = ""                        # Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)
   origin_red5pro_cloudstorage_digitalocean_spaces_secret_key     = ""                        # Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)
   origin_red5pro_cloudstorage_digitalocean_spaces_name           = "bucket-example-name"     # Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)
-  origin_red5pro_cloudstorage_digitalocean_spaces_region         = "nyc1"                    # Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces) (Valid locations are: ams3, fra1, nyc3, sfo3, sgp1)
+  origin_red5pro_cloudstorage_digitalocean_spaces_region         = "nyc1"                    # Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces) (Valid locations are: ams3, fra1, nyc1, nyc3, sfo3, sgp1)
   origin_red5pro_cloudstorage_postprocessor_enable               = false                     # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)
 
 # Red5 Pro autoscaling Node group - (Optional)

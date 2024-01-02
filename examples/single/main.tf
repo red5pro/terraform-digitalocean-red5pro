@@ -16,7 +16,7 @@ provider "digitalocean" {
 
 module "red5pro" {
   source                     = "../../"
-  digital_ocean_region       = "nyc1"                                                        # Digital Ocean region where resources will create eg: blr1
+  digital_ocean_region       = "nyc1"                                                        # Digital Ocean region where resources will create
   ubuntu_version             = "22.04"                                                       # The version of ubuntu which is used to create droplet, it can either be 20.04 or 22.04
   type                       = "single"                                                      # Deployment type: single, cluster, autoscaling
   name                       = "red5pro-single"                                              # Name to be used on all the resources as identifier
