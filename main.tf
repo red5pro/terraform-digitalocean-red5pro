@@ -1,40 +1,41 @@
 locals {
-  single                           = var.type == "single" ? true : false
-  cluster                          = var.type == "cluster" ? true : false
-  autoscaling                      = var.type == "autoscaling" ? true : false
-  cluster_or_autoscaling           = local.cluster || local.autoscaling ? true : false
-  ssh_key                          = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].fingerprint : data.digitalocean_ssh_key.ssh_key_pair[0].id
-  ssh_key_name                     = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].name : data.digitalocean_ssh_key.ssh_key_pair[0].name
-  ssh_private_key                  = var.ssh_key_create ? tls_private_key.red5pro_ssh_key[0].private_key_pem : file(var.ssh_private_key_path)
-  ssh_private_key_path             = var.ssh_key_create ? local_file.red5pro_ssh_key_pem[0].filename : var.ssh_private_key_path
-  vpc_id                           = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].id : data.digitalocean_vpc.selected[0].id
-  vpc_name                         = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].name : data.digitalocean_vpc.selected[0].name
-  mysql_local_enable               = local.autoscaling ? false : var.mysql_database_create ? false : true
-  mysql_db_system_create           = local.autoscaling ? true : local.cluster && var.mysql_database_create ? true : local.cluster && var.dedicated_terraform_service_host_create ? true : false
-  mysql_host                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].host : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].host : local.cluster && var.dedicated_terraform_service_host_create ? digitalocean_database_cluster.red5pro_mysql[0].host : "localhost"
-  mysql_user                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].user : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].user : local.cluster && var.dedicated_terraform_service_host_create ? digitalocean_database_cluster.red5pro_mysql[0].user : var.mysql_username 
-  mysql_password                   = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].password : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].password : local.cluster && var.dedicated_terraform_service_host_create ? digitalocean_database_cluster.red5pro_mysql[0].password : var.mysql_password
-  mysql_port                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].port : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].port : local.cluster && var.dedicated_terraform_service_host_create ? digitalocean_database_cluster.red5pro_mysql[0].port : var.mysql_port
-  terraform_host                   = local.autoscaling ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : local.cluster && var.dedicated_terraform_service_host_create ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : "localhost"
-  terraform_host_local_enable      = local.autoscaling ? false : local.cluster && var.dedicated_terraform_service_host_create ? false : true
-  dedicated_terraform_host_create  = local.autoscaling ? true : local.cluster && var.dedicated_terraform_service_host_create ? true : false
-  stream_manager_ip                = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : local.cluster ? digitalocean_droplet.red5pro_sm[0].ipv4_address : null
-  single_server_ip                 = local.single ? digitalocean_droplet.red5pro_single[0].ipv4_address : null
-  lb_certificate_name              = local.autoscaling && var.lb_ssl_create ? digitalocean_certificate.new_lb_cert[0].name : null
-  lb_ip                            = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : null
-  stream_manager_node_ids          = [ for autoscale_sm_droplet in digitalocean_droplet.red5pro_autoscale_sm : autoscale_sm_droplet.id ]
-  autoscale_sm_droplet_urn         = [ for autoscale_sm_urn in digitalocean_droplet.red5pro_autoscale_sm : autoscale_sm_urn.urn ]
-  project_resources                = concat(
+  single                               = var.type == "single" ? true : false
+  cluster                              = var.type == "cluster" ? true : false
+  autoscaling                          = var.type == "autoscaling" ? true : false
+  cluster_or_autoscaling               = local.cluster || local.autoscaling ? true : false
+  ssh_key                              = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].fingerprint : data.digitalocean_ssh_key.ssh_key_pair[0].id
+  ssh_key_name                         = var.ssh_key_create ? digitalocean_ssh_key.red5pro_ssh_key[0].name : data.digitalocean_ssh_key.ssh_key_pair[0].name
+  ssh_private_key                      = var.ssh_key_create ? tls_private_key.red5pro_ssh_key[0].private_key_pem : file(var.ssh_private_key_path)
+  ssh_private_key_path                 = var.ssh_key_create ? local_file.red5pro_ssh_key_pem[0].filename : var.ssh_private_key_path
+  vpc_id                               = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].id : data.digitalocean_vpc.selected[0].id
+  vpc_name                             = var.vpc_create ? digitalocean_vpc.red5pro_vpc[0].name : data.digitalocean_vpc.selected[0].name
+  mysql_local_enable                   = local.autoscaling ? false : var.mysql_database_create ? false : true
+  mysql_db_system_create               = local.autoscaling ? true : local.cluster && var.mysql_database_create ? true : local.cluster && var.terraform_service_instance_create ? true : false
+  mysql_host                           = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].host : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].host : local.cluster && var.terraform_service_instance_create ? digitalocean_database_cluster.red5pro_mysql[0].host : "localhost"
+  mysql_user                           = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].user : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].user : local.cluster && var.terraform_service_instance_create ? digitalocean_database_cluster.red5pro_mysql[0].user : var.mysql_username 
+  mysql_password                       = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].password : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].password : local.cluster && var.terraform_service_instance_create ? digitalocean_database_cluster.red5pro_mysql[0].password : var.mysql_password
+  mysql_port                           = local.autoscaling ? digitalocean_database_cluster.red5pro_mysql[0].port : local.cluster && var.mysql_database_create ? digitalocean_database_cluster.red5pro_mysql[0].port : local.cluster && var.terraform_service_instance_create ? digitalocean_database_cluster.red5pro_mysql[0].port : var.mysql_port
+  terraform_service_ip                 = local.autoscaling ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : local.cluster && var.terraform_service_instance_create ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : "localhost"
+  terraform_service_local_enable       = local.autoscaling ? false : local.cluster && var.terraform_service_instance_create ? false : true
+  dedicated_terraform_service_create   = local.autoscaling ? true : local.cluster && var.terraform_service_instance_create ? true : false
+  stream_manager_ip                    = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : local.cluster ? digitalocean_droplet.red5pro_sm[0].ipv4_address : null
+  single_server_ip                     = local.single ? digitalocean_droplet.red5pro_single[0].ipv4_address : null
+  lb_certificate_name                  = local.autoscaling && var.lb_ssl_create ? digitalocean_certificate.new_lb_cert[0].name : null
+  lb_ip                                = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : null
+  stream_managers_amount               = local.autoscaling ? var.stream_managers_amount : local.cluster ? 1 : 0
+  stream_managers_id                   = [ for red5pro_sm in digitalocean_droplet.red5pro_sm : red5pro_sm.id ]
+  stream_managers_urn                  = [ for red5pro_sm in digitalocean_droplet.red5pro_sm : red5pro_sm.urn ]
+  project_resources                    = concat(
     compact([ local.single ? digitalocean_droplet.red5pro_single[0].urn : "" ]),
     compact([ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ]),
     compact([ local.mysql_db_system_create ? digitalocean_database_cluster.red5pro_mysql[0].urn : "" ]),
-    compact([ local.dedicated_terraform_host_create ? digitalocean_droplet.red5pro_terraform_service[0].urn : "" ]),
+    compact([ local.dedicated_terraform_service_create ? digitalocean_droplet.red5pro_terraform_service[0].urn : "" ]),
     compact([ var.origin_image_create ? digitalocean_droplet.red5pro_origin_node[0].urn : "" ]),
     compact([ var.edge_image_create ? digitalocean_droplet.red5pro_edge_node[0].urn : "" ]),
     compact([ var.transcoder_image_create ? digitalocean_droplet.red5pro_transcoder_node[0].urn : "" ]),
     compact([ var.relay_image_create ? digitalocean_droplet.red5pro_relay_node[0].urn : "" ]),
     compact([ local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].urn : "" ]),
-    compact(local.autoscale_sm_droplet_urn)
+    compact(local.stream_managers_urn)
   )
 }
 
@@ -202,7 +203,6 @@ resource "digitalocean_droplet" "red5pro_single" {
   }
 }
 
-
 ################################################################################
 # Firewall for Single Red5Pro server (DO Droplet)
 ################################################################################
@@ -235,7 +235,7 @@ resource "digitalocean_firewall" "red5pro_single_fw" {
 resource "digitalocean_firewall" "red5pro_sm_fw" {
   count       = local.cluster_or_autoscaling ? 1 : 0
   name        = "${var.name}-stream-manager-fw"
-  droplet_ids = local.autoscaling ? local.stream_manager_node_ids : [digitalocean_droplet.red5pro_sm[0].id]
+  droplet_ids = local.stream_managers_id
 
   dynamic "inbound_rule" {
     for_each = var.firewall_stream_manager_inbound
@@ -261,8 +261,8 @@ resource "digitalocean_firewall" "red5pro_sm_fw" {
 ################################################################################
 # Stream Manager droplet
 resource "digitalocean_droplet" "red5pro_sm" {
-  count    = local.cluster_or_autoscaling ? 1 : 0
-  name     = "${var.name}-red5-sm"
+  count    = local.stream_managers_amount
+  name     = local.stream_managers_amount == 1 ? "${var.name}-red5-sm" : "${var.name}-red5-sm-${count.index+1}"
   region   = var.digital_ocean_region
   size     = var.stream_manager_droplet_size
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
@@ -270,7 +270,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
   vpc_uuid = local.vpc_id
 
   connection {
-    host        = digitalocean_droplet.red5pro_sm[0].ipv4_address
+    host        = self.ipv4_address
     type        = "ssh"
     user        = "root"
     private_key = local.ssh_private_key
@@ -303,6 +303,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
       # Stream Manager
       "export LICENSE_KEY='${var.red5pro_license_key}'",
       "export SM_API_KEY='${var.stream_manager_api_key}'",
+      "export SM_IP='${self.ipv4_address}'",
       "export NODE_API_KEY='${var.red5pro_api_key}'",
       "export NODE_CLUSTER_KEY='${var.red5pro_cluster_key}'",
       "export NODE_PREFIX_NAME='${var.name}-node'",
@@ -316,11 +317,11 @@ resource "digitalocean_droplet" "red5pro_sm" {
       "export SSL_MAIL='${var.https_letsencrypt_certificate_email}'",
       "export SSL_PASSWORD='${var.https_letsencrypt_certificate_password}'",
       # For Terraform Service
-      "export TF_SVC_ENABLE='${local.terraform_host_local_enable}'",
-      "export TERRA_HOST='${local.terraform_host}'",
-      "export TERRA_API_TOKEN='${var.terraform_service_api_token}'",
+      "export TF_SVC_ENABLE='${local.terraform_service_local_enable}'",
+      "export TERRA_HOST='${local.terraform_service_ip}'",
+      "export TERRA_API_KEY='${var.terraform_service_api_key}'",
       "export TERRA_PARALLELISM='${var.terraform_service_parallelism}'",
-      "export DO_API_TOKEN='${var.digital_ocean_token}'",
+      "export DO_API_TOKEN='${var.digital_ocean_access_token}'",
       "export SSH_KEY_NAME='${local.ssh_key_name}'",
       ###################################      
       "cd /home/red5pro-installer/",
@@ -332,37 +333,6 @@ resource "digitalocean_droplet" "red5pro_sm" {
       "sudo systemctl daemon-reload && sudo systemctl start red5pro",
       "nohup sudo -E /home/red5pro-installer/r5p_ssl_check_install.sh >> /home/red5pro-installer/r5p_ssl_check_install.log &",
       "sleep 2"
-
-    ]
-    connection {
-      host        = digitalocean_droplet.red5pro_sm[0].ipv4_address
-      type        = "ssh"
-      user        = "root"
-      private_key = local.ssh_private_key
-    }
-  }
-}
-
-# Autoscale Stream Manager Droplet 
-resource "digitalocean_droplet" "red5pro_autoscale_sm" {
-  count    = local.autoscaling ? var.autoscale_stream_manager_count : 0
-  name     = "${var.name}-autoscale-stream-manager-${count.index}"
-  region   = var.digital_ocean_region
-  size     = var.stream_manager_droplet_size
-  image    = digitalocean_droplet_snapshot.sm-snapshot[0].id
-  ssh_keys = [local.ssh_key]
-  vpc_uuid = local.vpc_id
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo cloud-init status --wait",
-      "sudo iptables -F",
-      "export LB_SM_IP='${self.ipv4_address}'", 
-      "cd /home/red5pro-installer/",
-      "sudo chmod +x /home/red5pro-installer/*.sh",
-      "sudo -E /home/red5pro-installer/r5p_config_lb_stream_manager.sh",
-      "sudo systemctl daemon-reload && sudo systemctl restart red5pro",
-      "sleep 2"
     ]
     connection {
       host        = self.ipv4_address
@@ -371,7 +341,6 @@ resource "digitalocean_droplet" "red5pro_autoscale_sm" {
       private_key = local.ssh_private_key
     }
   }
-  depends_on = [ digitalocean_droplet.red5pro_sm ]
 }
 
 ################################################################################
@@ -389,29 +358,11 @@ resource "digitalocean_database_cluster" "red5pro_mysql" {
   private_network_uuid = local.vpc_id
 }
 
-# Allowing stream manager and terraform service droplet to access the MySQL Database
-resource "digitalocean_database_firewall" "database_fw" {
-  count      = local.mysql_db_system_create ? 1 : 0
-  cluster_id = digitalocean_database_cluster.red5pro_mysql[0].id
-
-  dynamic "rule" {
-    for_each = local.autoscaling ? toset(digitalocean_droplet.red5pro_autoscale_sm[*].id) : toset(digitalocean_droplet.red5pro_sm[*].id)
-    content {
-      type  = "droplet"
-      value = rule.key
-    }
-  }
-  rule {
-    type     = "droplet"
-    value    = var.dedicated_terraform_service_host_create ? digitalocean_droplet.red5pro_terraform_service[0].id : digitalocean_droplet.red5pro_sm[0].id
-  }
-}
-
 ################################################################################
 # DO droplet Terraform Service
 ################################################################################
 resource "digitalocean_droplet" "red5pro_terraform_service" {
-  count    = local.dedicated_terraform_host_create ? 1 : 0
+  count    = local.dedicated_terraform_service_create ? 1 : 0
   name     = "${var.name}-red5-terraform-service"
   region   = var.digital_ocean_region
   size     = var.terraform_service_droplet_size
@@ -445,11 +396,11 @@ resource "digitalocean_droplet" "red5pro_terraform_service" {
     inline = [
       "sudo iptables -F",
       "sudo cloud-init status --wait",
-      "export DO_API_TOKEN='${var.digital_ocean_token}'",
+      "export DO_API_TOKEN='${var.digital_ocean_access_token}'",
       "export SSH_KEY_NAME='${local.ssh_key_name}'",
       "export TF_SVC_ENABLE=true",
       "export TERRA_HOST='${self.ipv4_address}'",
-      "export TERRA_API_TOKEN='${var.terraform_service_api_token}'",
+      "export TERRA_API_KEY='${var.terraform_service_api_key}'",
       "export TERRA_PARALLELISM='${var.terraform_service_parallelism}'",
       "export DB_HOST='${local.mysql_host}'",
       "export DB_PORT='${local.mysql_port}'",
@@ -471,7 +422,7 @@ resource "digitalocean_droplet" "red5pro_terraform_service" {
 
 # Firewall for Terraform Service droplet
 resource "digitalocean_firewall" "red5pro_terraform_service_fw" {
-  count       = local.dedicated_terraform_host_create ? 1 : 0
+  count       = local.dedicated_terraform_service_create ? 1 : 0
   name        = "${var.name}-terraform-service-fw"
   droplet_ids = [digitalocean_droplet.red5pro_terraform_service[0].id]
 
@@ -533,8 +484,8 @@ resource "digitalocean_loadbalancer" "red5pro_lb" {
   }
 
   vpc_uuid = local.vpc_id
-  droplet_ids = local.stream_manager_node_ids
-  depends_on = [ digitalocean_droplet.red5pro_autoscale_sm ]
+  droplet_ids = local.stream_managers_id
+  depends_on = [ digitalocean_droplet.red5pro_sm ]
 }
 
 # Load Balancer Certificate 
@@ -551,7 +502,6 @@ resource "digitalocean_certificate" "new_lb_cert" {
     create_before_destroy = true
   }
 }
-
 
 ################################################################################
 # Red5 Pro Autoscaling Nodes - Origin/Edge/Transcoders/Relay (DO Droplet)
@@ -614,9 +564,7 @@ resource "digitalocean_droplet" "red5pro_origin_node" {
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",
       "sudo -E /home/red5pro-installer/r5p_config_node.sh",
       "sudo -E /home/red5pro-installer/r5p_config_node_apps_plugins.sh",
-      "sudo systemctl daemon-reload && sudo systemctl start red5pro",
-      "sleep 2"
-
+      "sudo -E /home/red5pro-installer/r5p_cleanup_node.sh"
     ]
     connection {
       host        = digitalocean_droplet.red5pro_origin_node[0].ipv4_address
@@ -685,9 +633,7 @@ resource "digitalocean_droplet" "red5pro_edge_node" {
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",
       "sudo -E /home/red5pro-installer/r5p_config_node.sh",
       "sudo -E /home/red5pro-installer/r5p_config_node_apps_plugins.sh",
-      "sudo systemctl daemon-reload && sudo systemctl start red5pro",
-      "sleep 2"
-
+      "sudo -E /home/red5pro-installer/r5p_cleanup_node.sh"
     ]
     connection {
       host        = digitalocean_droplet.red5pro_edge_node[0].ipv4_address
@@ -756,9 +702,7 @@ resource "digitalocean_droplet" "red5pro_transcoder_node" {
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",
       "sudo -E /home/red5pro-installer/r5p_config_node.sh",
       "sudo -E /home/red5pro-installer/r5p_config_node_apps_plugins.sh",
-      "sudo systemctl daemon-reload && sudo systemctl start red5pro",
-      "sleep 2"
-
+      "sudo -E /home/red5pro-installer/r5p_cleanup_node.sh"
     ]
     connection {
       host        = digitalocean_droplet.red5pro_transcoder_node[0].ipv4_address
@@ -827,9 +771,7 @@ resource "digitalocean_droplet" "red5pro_relay_node" {
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",
       "sudo -E /home/red5pro-installer/r5p_config_node.sh",
       "sudo -E /home/red5pro-installer/r5p_config_node_apps_plugins.sh",
-      "sudo systemctl daemon-reload && sudo systemctl start red5pro",
-      "sleep 2"
-
+      "sudo -E /home/red5pro-installer/r5p_cleanup_node.sh"
     ]
     connection {
       host        = digitalocean_droplet.red5pro_relay_node[0].ipv4_address
@@ -843,13 +785,6 @@ resource "digitalocean_droplet" "red5pro_relay_node" {
 ####################################################################################################
 # Red5 Pro Autoscaling Nodes create images - Origin/Edge/Transcoders/Relay (DO Custom Images)
 ####################################################################################################
-# Stream Manager Image Autoscale
-resource "digitalocean_droplet_snapshot" "sm-snapshot" {
-  count          = local.autoscaling ? 1 : 0
-  droplet_id     = digitalocean_droplet.red5pro_sm[0].id
-  name           = "${var.name}-autoscale-stream-manager-image-${formatdate("DDMMMYY-hhmm", timestamp())}"
-  depends_on     = [digitalocean_droplet.red5pro_sm]
-}
 # Origin node - Create image
 resource "digitalocean_droplet_snapshot" "origin-snapshot" {
   count          = local.cluster_or_autoscaling && var.origin_image_create ? 1 : 0
@@ -883,45 +818,50 @@ resource "digitalocean_droplet_snapshot" "relay-snapshot" {
 }
 
 ################################################################################
-# Stop droplet which used for creating DO custom images (DO CLI)
+# Delete droplets which used for creating DO custom images (DO CLI)
 ################################################################################
-# Stop Stream Manager droplet using DO CLI
-resource "null_resource" "stop_stream_manager" {
-  count = local.autoscaling ? 1 : 0
-  provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_sm[0].id} -f --access-token ${var.digital_ocean_token}"
-  }
-  depends_on     = [digitalocean_droplet_snapshot.sm-snapshot]
-}
-# Stop Origin Node droplet using DO CLI
+
+# Delete Origin Node droplet using DO CLI
 resource "null_resource" "delete_node_origin" {
   count = local.cluster_or_autoscaling && var.origin_image_create ? 1 : 0
   provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_origin_node[0].id} -f --access-token ${var.digital_ocean_token}"
+    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_origin_node[0].id} -f"
+    environment = {
+      DIGITALOCEAN_ACCESS_TOKEN = "${var.digital_ocean_access_token}"
+    }
   }
   depends_on     = [digitalocean_droplet_snapshot.origin-snapshot]
 }
-# Stop Edge Node droplet using DO CLI
+# Delete Edge Node droplet using DO CLI
 resource "null_resource" "delete_node_edge" {
   count = local.cluster_or_autoscaling && var.edge_image_create ? 1 : 0
   provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_edge_node[0].id} -f --access-token ${var.digital_ocean_token}"
+    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_edge_node[0].id} -f"
+    environment = {
+      DIGITALOCEAN_ACCESS_TOKEN = "${var.digital_ocean_access_token}"
+    }
   }
   depends_on     = [digitalocean_droplet_snapshot.edge-snapshot]
 }
-# Stop Transcoder Node droplet using DO CLI
+# Delete Transcoder Node droplet using DO CLI
 resource "null_resource" "delete_node_transcoder" {
   count = local.cluster_or_autoscaling && var.transcoder_image_create ? 1 : 0
   provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_transcoder_node[0].id} -f --access-token ${var.digital_ocean_token}"
+    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_transcoder_node[0].id} -f"
+    environment = {
+      DIGITALOCEAN_ACCESS_TOKEN = "${var.digital_ocean_access_token}"
+    }
   }
   depends_on     = [digitalocean_droplet_snapshot.transcoder-snapshot]
 }
-# Stop Relay Node droplet using DO CLI
+# Delete Relay Node droplet using DO CLI
 resource "null_resource" "delete_node_relay" {
   count = local.cluster_or_autoscaling && var.relay_image_create ? 1 : 0
   provisioner "local-exec" {
-    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_relay_node[0].id} -f --access-token ${var.digital_ocean_token}"
+    command = "doctl compute droplet delete ${digitalocean_droplet.red5pro_relay_node[0].id} -f"
+    environment = {
+      DIGITALOCEAN_ACCESS_TOKEN = "${var.digital_ocean_access_token}"
+    }
   }
   depends_on     = [digitalocean_droplet_snapshot.relay-snapshot]
 }
@@ -968,6 +908,5 @@ resource "null_resource" "node_group" {
       RELAY_IMAGE_NAME           = "${try(digitalocean_droplet_snapshot.relay-snapshot[0].name, null)}"
     }
   }
-
-  depends_on =  [ digitalocean_droplet.red5pro_autoscale_sm , digitalocean_droplet.red5pro_sm]
+  depends_on =  [digitalocean_droplet.red5pro_sm]
 }

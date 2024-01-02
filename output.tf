@@ -103,7 +103,7 @@ output "load_balancer_https_url" {
   value = local.autoscaling ? "https://${local.lb_ip}:443" : null
 }
 
-output "terraform_service_host" {
+output "terraform_service_ip" {
   description = "Terraform Service Host"
-  value = local.terraform_host
+  value = local.terraform_service_ip
 }

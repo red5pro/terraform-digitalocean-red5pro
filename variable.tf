@@ -28,16 +28,6 @@ variable "type" {
     error_message = "The type value must be a valid! Example: single, cluster, autoscaling"
   }
 }
-variable "ubuntu_version" {
-  description = "Ubuntu version which is going to be used for creating droplet in Digital Ocean"
-  type = string
-  default = "20.04"
-  validation {
-    condition = var.ubuntu_version == "20.04" || var.ubuntu_version == "22.04"
-    error_message = "Please specify the correct ubuntu version, it can either be 20.04 or 22.04"
-  }
-}
-
 variable "path_to_red5pro_build" {
   description = "Path to the Red5 Pro build zip file, absolute path or relative path. https://account.red5pro.com/downloads. Example: /home/ubuntu/red5pro-server-0.0.0.b0-release.zip"
   type        = string
@@ -54,7 +44,7 @@ variable "digital_ocean_region" {
   default     = ""
 }
 
-variable "digital_ocean_token" {
+variable "digital_ocean_access_token" {
   description = "DO token to access the services of cloud"
   default     = ""
 }
@@ -77,13 +67,13 @@ variable "vpc_name_existing" {
 }
 
 # Red5 Pro Terraform Service properties
-variable "dedicated_terraform_service_host_create" {
+variable "terraform_service_instance_create" {
   description = "Create a dedicated DO droplet for Red5 pro Terraform Service "
   type        = bool
   default     = true
 }
-variable "terraform_service_api_token" {
-  description = "API Token for Teraform Service to autherize the APIs"
+variable "terraform_service_api_key" {
+  description = "API key for Teraform Service to autherize the APIs"
   type        = string
   default     = ""
 }
@@ -390,13 +380,13 @@ variable "ssh_private_key_path" {
 }
 
 # Stream Manager Configuration
-variable "autoscale_stream_manager_count" {
+variable "stream_managers_amount" {
   description = "Total number stream manager required to setup in autoscale."
   type        = number
-  default     = 2
+  default     = 1
   validation {
-    condition     = var.autoscale_stream_manager_count >= 2
-    error_message = "The stream manager count should be greater than or equal to '2'. The default count is '2'."
+    condition     = var.stream_managers_amount >= 1
+    error_message = "The stream manager amount should be greater than or equal to '1'. The default count is '1'."
   }
 }
 variable "stream_manager_droplet_size" {
@@ -1034,7 +1024,11 @@ variable "ubuntu_image_version" {
   }
 }
 variable "ubuntu_version" {
-  description = "Ubuntu version"
+  description = "Ubuntu version which is going to be used for creating droplet in Digital Ocean"
   type        = string
   default     = "22.04"
+  validation {
+    condition = var.ubuntu_version == "18.04" || var.ubuntu_version == "20.04" || var.ubuntu_version == "22.04"
+    error_message = "Please specify the correct ubuntu version, it can either be 18.04, 20.04 or 22.04"
+  }
 }
