@@ -68,12 +68,6 @@ module "red5pro" {
   red5pro_api_enable          = true                                                         # true - enable Red5 Pro server API, false - disable Red5 Pro server API (https://www.red5pro.com/docs/development/api/overview/)
   red5pro_api_key             = "examplekey"                                                 # Red5 Pro server API key (https://www.red5pro.com/docs/development/api/overview/)
 
-  # Red5 Pro server HTTPS/SSL certificate configuration
-  https_letsencrypt_enable                   = false                                         # true - create new Let's Encrypt HTTPS/SSL certificate, false - use Red5 Pro server without HTTPS/SSL certificate
-  https_letsencrypt_certificate_domain_name  = "red5pro.example.com"                         # Domain name for Let's Encrypt SSL certificate
-  https_letsencrypt_certificate_email        = "email@example.com"                           # Email for Let's Encrypt SSL certificate
-  https_letsencrypt_certificate_password     = "examplepass"                                 # Password for Let's Encrypt SSL certificate
-
   # Red5 Pro autoscaling Origin node image configuration
   origin_image_create                                      = true                            # Default: true for Autoscaling and Cluster, true - create new Origin node image, false - not create new Origin node image
   origin_image_droplet_size                                = "c-2"                           # droplet type for Origin node image
@@ -119,5 +113,5 @@ module "red5pro" {
 
 output "module_output" {
   sensitive = true
-  value = module.red5pro
+  value     = module.red5pro
 }
