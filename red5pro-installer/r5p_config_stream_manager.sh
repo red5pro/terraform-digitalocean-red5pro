@@ -4,7 +4,7 @@
 ############################################################################################################
 
 # TERRA_HOST
-# TERRA_API_TOKEN
+# TERRA_API_KEY
 # DB_HOST
 # DB_PORT
 # DB_USER
@@ -41,8 +41,8 @@ config_sm_properties_do(){
         log_w "Variable TERRA_HOST is empty."
         var_error=1
     fi
-    if [ -z "$TERRA_API_TOKEN" ]; then
-        log_w "Variable TERRA_API_TOKEN is empty."
+    if [ -z "$TERRA_API_KEY" ]; then
+        log_w "Variable TERRA_API_KEY is empty."
         var_error=1
     fi
     if [[ "$var_error" == "1" ]]; then
@@ -63,7 +63,7 @@ config_sm_properties_do(){
     local terra_port_new="terra.port=8083"
     
     local terra_token_pattern='#terra.token=.*'
-    local terra_token_new="terra.token=${TERRA_API_TOKEN}"
+    local terra_token_new="terra.token=${TERRA_API_KEY}"
     
     sed -i -e "s|$terra_region_pattern|$terra_region_new|" -e "s|$terra_instance_name_pattern|$terra_instance_name_new|" -e "s|$terra_host_pattern|$terra_host_new|" -e "s|$terra_port_pattern|$terra_port_new|" -e "s|$terra_token_pattern|$terra_token_new|" "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
     
