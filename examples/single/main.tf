@@ -38,12 +38,6 @@ module "red5pro" {
   vpc_cidr_block              = "10.5.0.0/16"                                                # VPC CIDR value for Digital Ocean
   vpc_name_existing           = "example-vpc"                                                # VPC name of existing VPC if vpc_create is false
   
-  # Red5 Pro general configuration
-  red5pro_license_key         = "1111-2222-3333-4444"                                        # Red5 Pro license key (https://account.red5pro.com/login)
-  red5pro_cluster_key         = "examplekey"                                                 # Red5 Pro cluster key
-  red5pro_api_enable          = true                                                         # true - enable Red5 Pro server API, false - disable Red5 Pro server API (https://www.red5pro.com/docs/development/api/overview/)
-  red5pro_api_key             = "examplekey"                                                 # Red5 Pro server API key (https://www.red5pro.com/docs/development/api/overview/)
-
   # Single Red5 Pro server HTTPS/SSL certificate configuration
   https_letsencrypt_enable                   = false                                         # true - create new Let's Encrypt HTTPS/SSL certificate, false - use Red5 Pro server without HTTPS/SSL certificate
   https_letsencrypt_certificate_domain_name  = "red5pro.example.com"                         # Domain name for Let's Encrypt SSL certificate
