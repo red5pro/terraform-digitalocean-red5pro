@@ -13,6 +13,7 @@
 # NODE_CLUSTER_KEY
 # NODE_API_KEY
 # SM_API_KEY
+# SM_IP
 
 RED5_HOME="/usr/local/red5pro"
 CURRENT_DIRECTORY=$(pwd)
@@ -258,6 +259,20 @@ config_mysql(){
     fi
 }
 
+config_sm_ip(){
+    log_i "Start configuration SM_IP in the Stream Manager properties for single and multiple Stream Managers (SM)"
+
+    if [ -z "$SM_IP" ]; then
+        log_w "Variable SM_IP is empty."
+        exit 1
+    fi
+    
+    local streammanager_ip_pattern='streammanager.ip=.*'
+    local streammanager_ip_new="streammanager.ip=${SM_IP}"
+    
+    sed -i -e "s|$streammanager_ip_pattern|$streammanager_ip_new|"  "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
+}
+
 install_sm
 config_sm_applicationContext
 config_sm_cors
@@ -265,3 +280,4 @@ config_whip_whep
 config_sm_properties_main
 config_sm_properties_do
 config_mysql
+config_sm_ip
