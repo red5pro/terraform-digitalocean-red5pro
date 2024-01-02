@@ -1,4 +1,3 @@
-
 output "vpc_name" {
   description = "VPC Name"
   value       = module.red5pro.vpc_name
