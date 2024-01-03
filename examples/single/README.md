@@ -58,23 +58,11 @@ $ terraform apply
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
 | <a name="requirement_digitalocean"></a> [digitalocean](#requirement\_digitalocean) | >=2.34.0 |
 
-## Providers
-
-No providers.
-
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_red5pro"></a> [red5pro](#module\_red5pro) | ../../ | n/a |
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
 
 ## Outputs
 
