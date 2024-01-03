@@ -51,39 +51,24 @@ $ terraform apply
 * To activate HTTPS/SSL you need to add DNS A record for Elastic IP of Red5 Pro server
 * Note that this example may create resources which can cost money. Run `terraform destroy` when you don't need these resources.
 
-
-
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_digitalocean"></a> [digitalocean](#requirement\_digitalocean) | >=2.28.0 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_digitalocean"></a> [digitalocean](#provider\_digitalocean) | >=2.28.0 |
+| <a name="requirement_digitalocean"></a> [digitalocean](#requirement\_digitalocean) | >=2.34.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_red5pro"></a> [red5pro](#module\_red5pro) | ../../ | N/A |
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
+| <a name="module_red5pro"></a> [red5pro](#module\_red5pro) | ../../ | n/a |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| <a name="output_module_output"></a> [module\_output](#output\_module\_output) | n/a |
 | <a name="output_red5pro_server_http_url"></a> [red5pro\_server\_http\_url](#output\_red5pro\_server\_http\_url) | Red5 Pro Server HTTP URL |
 | <a name="output_red5pro_server_https_url"></a> [red5pro\_server\_https\_url](#output\_red5pro\_server\_https\_url) | Red5 Pro Server HTTPS URL |
 | <a name="output_red5pro_server_ip"></a> [red5pro\_server\_ip](#output\_red5pro\_server\_ip) | Red5 Pro Server IP |

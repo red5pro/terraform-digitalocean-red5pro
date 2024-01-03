@@ -63,33 +63,18 @@ $ terraform apply
 * To activate HTTPS/SSL you need to add DNS A record for Elastic IP of Red5 Pro server
 * Note that this example may create resources which can cost money. Run `terraform destroy` when you don't need these resources.
 
-
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_digitalocean"></a> [digitalocean](#requirement\_digitalocean) | >=2.28.0 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_digitalocean"></a> [digitalocean](#provider\_digitalocean) | >=2.28.0 |
+| <a name="requirement_digitalocean"></a> [digitalocean](#requirement\_digitalocean) | >=2.34.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_red5pro"></a> [red5pro](#module\_red5pro) | ../../ | N/A |
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
+| <a name="module_red5pro"></a> [red5pro](#module\_red5pro) | ../../ | n/a |
 
 ## Outputs
 
@@ -99,6 +84,7 @@ No inputs.
 | <a name="output_database_password"></a> [database\_password](#output\_database\_password) | Database Password |
 | <a name="output_database_port"></a> [database\_port](#output\_database\_port) | Database Port |
 | <a name="output_database_user"></a> [database\_user](#output\_database\_user) | Database User |
+| <a name="output_module_output"></a> [module\_output](#output\_module\_output) | n/a |
 | <a name="output_node_edge_image"></a> [node\_edge\_image](#output\_node\_edge\_image) | Image name of the Red5 Pro Node Edge image |
 | <a name="output_node_origin_image"></a> [node\_origin\_image](#output\_node\_origin\_image) | Image name of the Red5 Pro Node Origin image |
 | <a name="output_node_relay_image"></a> [node\_relay\_image](#output\_node\_relay\_image) | Image name of the Red5 Pro Node Relay image |
@@ -108,4 +94,5 @@ No inputs.
 | <a name="output_ssh_key_name"></a> [ssh\_key\_name](#output\_ssh\_key\_name) | SSH key name |
 | <a name="output_ssh_private_key_path"></a> [ssh\_private\_key\_path](#output\_ssh\_private\_key\_path) | SSH private key path |
 | <a name="output_stream_manager_ip"></a> [stream\_manager\_ip](#output\_stream\_manager\_ip) | Red5 Pro Server IP |
+| <a name="output_terraform_service_ip"></a> [terraform\_service\_ip](#output\_terraform\_service\_ip) | Terraform Service Host |
 | <a name="output_vpc_name"></a> [vpc\_name](#output\_vpc\_name) | VPC Name |
