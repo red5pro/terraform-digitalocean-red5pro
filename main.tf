@@ -62,6 +62,10 @@ resource "digitalocean_project" "do_project" {
   resources = local.project_resources
 }
 
+resource "digitalocean_tag" "red5pro_tag" {
+  name        = "${var.name}-red5-deployment"
+}
+
 ################################################################################
 # SSH_KEY
 ################################################################################
@@ -138,6 +142,7 @@ resource "digitalocean_droplet" "red5pro_single" {
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
+  tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
     host        = digitalocean_droplet.red5pro_single[0].ipv4_address
@@ -268,6 +273,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
+  tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
     host        = self.ipv4_address
@@ -356,6 +362,7 @@ resource "digitalocean_database_cluster" "red5pro_mysql" {
   node_count = 1
   engine     = "mysql"
   private_network_uuid = local.vpc_id
+  tags     = [digitalocean_tag.red5pro_tag.id]
 }
 
 ################################################################################
@@ -369,6 +376,7 @@ resource "digitalocean_droplet" "red5pro_terraform_service" {
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
+  tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
     host        = digitalocean_droplet.red5pro_terraform_service[0].ipv4_address
@@ -515,6 +523,7 @@ resource "digitalocean_droplet" "red5pro_origin_node" {
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
+  tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
     host        = digitalocean_droplet.red5pro_origin_node[0].ipv4_address
@@ -584,6 +593,7 @@ resource "digitalocean_droplet" "red5pro_edge_node" {
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
+  tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
     host        = digitalocean_droplet.red5pro_edge_node[0].ipv4_address
@@ -653,6 +663,7 @@ resource "digitalocean_droplet" "red5pro_transcoder_node" {
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
+  tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
     host        = digitalocean_droplet.red5pro_transcoder_node[0].ipv4_address
@@ -722,6 +733,7 @@ resource "digitalocean_droplet" "red5pro_relay_node" {
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
   ssh_keys = [local.ssh_key]
   vpc_uuid = local.vpc_id
+  tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
     host        = digitalocean_droplet.red5pro_relay_node[0].ipv4_address

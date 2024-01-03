@@ -78,7 +78,7 @@ module "red5pro" {
 
   # Digital Ocean project configuration
   project_create              = true                                                         # true - create a new project, false - use existing project
-  project_name                = "Exaple-Project-Name"                                        # New Project name in digital Ocean
+  project_name                = "Exaple-Project-Name"                                        # New or existing Project name in digital Ocean
 
   # Digital Ocean VPC configuration
   vpc_create                  = true                                                         # true - create new VPC, false - use existing VPC
@@ -168,7 +168,7 @@ module "red5pro" {
 
   # Digital Ocean project configuration
   project_create              = true                                                         # true - create a new project, false - use existing project
-  project_name                = "Exaple-Project-Name"                                        # New Project name in digital Ocean
+  project_name                = "Exaple-Project-Name"                                        # New or existing Project name in digital Ocean
 
   # Digital Ocean VPC configuration
   vpc_create                  = true                                                         # true - create new VPC, false - use existing VPC
@@ -298,7 +298,7 @@ module "red5pro" {
 
   # Digital Ocean project configuration
   project_create              = true                                                         # true - create a new project, false - use existing project
-  project_name                = "Exaple-Project-Name"                                        # New Project name in digital Ocean
+  project_name                = "Exaple-Project-Name"                                        # New or existing Project name in digital Ocean
 
   # Digital Ocean VPC configuration
   vpc_create                  = true                                                         # true - create new VPC, false - use existing VPC
