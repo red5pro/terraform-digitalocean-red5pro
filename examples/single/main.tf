@@ -5,44 +5,47 @@ terraform {
   required_providers {
     digitalocean = {
       source  = "digitalocean/digitalocean"
-      version = ">=2.32.0"
+      version = ">=2.34.0"
     }
   }
 }
 
 provider "digitalocean" {
-  token                     = ""                                                             # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
+  token                     = "dop_v1_example"                                               # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
 }
 
-module "red5pro_single" {
-  source                    = "../../"
-  digital_ocean_region      = "blr1"                                                         # Digital Ocean region where resources will create eg: blr1
-  ubuntu_version            = "20.04"                                                        # The version of ubuntu which is used to create droplet, it can either be 20.04 or 22.04
-  type                      = "single"                                                       # Deployment type: single, cluster, autoscaling
-  name                      = ""                                                             # Name to be used on all the resources as identifier
-  digital_ocean_project     = true                                                           # Create a new project in Digital Ocean
-  project_name              = "Exaple-Project"                                               # New Project name in digital Ocean
-
-  path_to_red5pro_build     = "./red5pro-server-0.0.0.b00-release.zip"                       # Absolute path or relative path to Red5 Pro server ZIP file
-
-  # SSH key configuration
-  ssh_key_create            = true                                                           # true - create new SSH key, false - use existing SSH key
-  ssh_key_name              = "example_key"                                                  # Name for new SSH key or for existing SSH key
-  ssh_private_key_path      = "./example_key.pem"                                            # Path to existing SSH private key
+module "red5pro" {
+  source                     = "../../"
+  digital_ocean_region       = "nyc1"                                                        # Digital Ocean region where resources will create
+  ubuntu_version             = "22.04"                                                       # The version of ubuntu which is used to create droplet, it can either be 20.04 or 22.04
+  type                       = "single"                                                      # Deployment type: single, cluster, autoscaling
+  name                       = "red5pro-single"                                              # Name to be used on all the resources as identifier
   
-  # VPC configuration
-  vpc_cidr_block            = "10.5.0.0/16"                                                  # VPC CIDR value for Digital Ocean
-  vpc_create                = true                                                           # true - create new VPC, false - use existing VPC
-  vpc_name_existing         = "example-vpc"                                                  # VPC name of existing VPC if vpc_create is false
- 
+  # Red5 Pro artifacts configuration
+  path_to_red5pro_build       = "./red5pro-server-0.0.0.0-release.zip"                       # Absolute path or relative path to Red5 Pro server ZIP file
+  
+  # SSH key configuration
+  ssh_key_create              = true                                                         # true - create new SSH key, false - use existing SSH key
+  ssh_key_name                = "example_key_name"                                           # Name for new SSH key or for existing SSH key
+  ssh_private_key_path        = "./example_key.pem"                                          # Path to existing SSH private key
+
+  # Digital Ocean project configuration
+  project_create              = true                                                         # true - create a new project, false - use existing project
+  project_name                = "Exaple-Project-Name"                                        # New Project name in digital Ocean
+
+  # Digital Ocean VPC configuration
+  vpc_create                  = true                                                         # true - create new VPC, false - use existing VPC
+  vpc_cidr_block              = "10.5.0.0/16"                                                # VPC CIDR value for Digital Ocean
+  vpc_name_existing           = "example-vpc"                                                # VPC name of existing VPC if vpc_create is false
+  
   # Single Red5 Pro server HTTPS/SSL certificate configuration
   https_letsencrypt_enable                   = false                                         # true - create new Let's Encrypt HTTPS/SSL certificate, false - use Red5 Pro server without HTTPS/SSL certificate
   https_letsencrypt_certificate_domain_name  = "red5pro.example.com"                         # Domain name for Let's Encrypt SSL certificate
   https_letsencrypt_certificate_email        = "email@example.com"                           # Email for Let's Encrypt SSL certificate
   https_letsencrypt_certificate_password     = "examplepass"                                 # Password for Let's Encrypt SSL certificate
-  
+
   # Single Red5 Pro server Droplet configuration
-  single_droplet_size                        = "c-4"                                         # Droplet size for Red5 Pro server in Digital Ocean
+  single_droplet_size                        = "c-2"                                         # Droplet size for Red5 Pro server in Digital Ocean
 
   # Red5Pro server configuration
   red5pro_license_key                           = "1111-2222-3333-4444"                      # Red5 Pro license key (https://account.red5pro.com/login)
@@ -65,12 +68,11 @@ module "red5pro_single" {
   red5pro_cloudstorage_digitalocean_spaces_access_key     = ""                               # Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)
   red5pro_cloudstorage_digitalocean_spaces_secret_key     = ""                               # Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)
   red5pro_cloudstorage_digitalocean_spaces_name           = "bucket-example-name"            # Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)
-  red5pro_cloudstorage_digitalocean_spaces_region         = "blr1"                           # Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces) (Valid locations are: ams3, fra1, nyc3, sfo3, sgp1)
-  red5pro_cloudstorage_postprocessor_enable               = true                             # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)
-
+  red5pro_cloudstorage_digitalocean_spaces_region         = "nyc1"                           # Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces) (Valid locations are: ams3, fra1, nyc3, sfo3, sgp1)
+  red5pro_cloudstorage_postprocessor_enable               = false                            # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)
 }
 
 output "module_output" {
   sensitive = true
-  value = module.red5pro_single
+  value     = module.red5pro
 }

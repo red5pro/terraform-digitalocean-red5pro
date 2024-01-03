@@ -24,7 +24,7 @@ output "node_relay_image" {
 
 output "digital_ocean_project" {
   description = "Digital Ocean project where resources will be created"
-  value = var.digital_ocean_project ? var.project_name : null
+  value = var.project_name
 }
 
 output "ssh_key_name" {
@@ -101,4 +101,9 @@ output "load_balancer_ip" {
 output "load_balancer_https_url" {
   description = "Load Balancer HTTPS URL"
   value = local.autoscaling ? "https://${local.lb_ip}:443" : null
+}
+
+output "terraform_service_ip" {
+  description = "Terraform Service Host"
+  value = local.terraform_service_ip
 }

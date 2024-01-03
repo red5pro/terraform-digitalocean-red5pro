@@ -4,7 +4,7 @@
 ############################################################################################################
 
 # TERRA_HOST
-# TERRA_API_TOKEN
+# TERRA_API_KEY
 # DB_HOST
 # DB_PORT
 # DB_USER
@@ -13,6 +13,7 @@
 # NODE_CLUSTER_KEY
 # NODE_API_KEY
 # SM_API_KEY
+# SM_IP
 
 RED5_HOME="/usr/local/red5pro"
 CURRENT_DIRECTORY=$(pwd)
@@ -40,8 +41,8 @@ config_sm_properties_do(){
         log_w "Variable TERRA_HOST is empty."
         var_error=1
     fi
-    if [ -z "$TERRA_API_TOKEN" ]; then
-        log_w "Variable TERRA_API_TOKEN is empty."
+    if [ -z "$TERRA_API_KEY" ]; then
+        log_w "Variable TERRA_API_KEY is empty."
         var_error=1
     fi
     if [[ "$var_error" == "1" ]]; then
@@ -62,7 +63,7 @@ config_sm_properties_do(){
     local terra_port_new="terra.port=8083"
     
     local terra_token_pattern='#terra.token=.*'
-    local terra_token_new="terra.token=${TERRA_API_TOKEN}"
+    local terra_token_new="terra.token=${TERRA_API_KEY}"
     
     sed -i -e "s|$terra_region_pattern|$terra_region_new|" -e "s|$terra_instance_name_pattern|$terra_instance_name_new|" -e "s|$terra_host_pattern|$terra_host_new|" -e "s|$terra_port_pattern|$terra_port_new|" -e "s|$terra_token_pattern|$terra_token_new|" "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
     
@@ -258,6 +259,20 @@ config_mysql(){
     fi
 }
 
+config_sm_ip(){
+    log_i "Start configuration SM_IP in the Stream Manager properties for single and multiple Stream Managers (SM)"
+
+    if [ -z "$SM_IP" ]; then
+        log_w "Variable SM_IP is empty."
+        exit 1
+    fi
+    
+    local streammanager_ip_pattern='streammanager.ip=.*'
+    local streammanager_ip_new="streammanager.ip=${SM_IP}"
+    
+    sed -i -e "s|$streammanager_ip_pattern|$streammanager_ip_new|"  "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
+}
+
 install_sm
 config_sm_applicationContext
 config_sm_cors
@@ -265,3 +280,4 @@ config_whip_whep
 config_sm_properties_main
 config_sm_properties_do
 config_mysql
+config_sm_ip
