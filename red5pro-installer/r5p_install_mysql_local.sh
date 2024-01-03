@@ -89,9 +89,6 @@ mysql_config(){
     mysql -e "CREATE USER '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';"
     mysql -e "GRANT ALL PRIVILEGES ON * . * TO '${DB_USER}'@'%';"
 
-    log_i "Creating DB cluster ..."
-    mysql -u $DB_USER -p${DB_PASSWORD} -e "CREATE DATABASE cluster;"
-
     mysql_config="/etc/mysql/mysql.conf.d/mysqld.cnf"
     log_i "MYSQL extra configuration in config file: $mysql_config"
 

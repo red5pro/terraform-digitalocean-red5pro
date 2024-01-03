@@ -4,7 +4,7 @@
 ############################################################################################################
 
 # TERRA_HOST
-# TERRA_API_TOKEN
+# TERRA_API_KEY
 # DB_HOST
 # DB_PORT
 # DB_USER
@@ -13,6 +13,7 @@
 # NODE_CLUSTER_KEY
 # NODE_API_KEY
 # SM_API_KEY
+# SM_IP
 
 RED5_HOME="/usr/local/red5pro"
 CURRENT_DIRECTORY=$(pwd)
@@ -40,8 +41,8 @@ config_sm_properties_do(){
         log_w "Variable TERRA_HOST is empty."
         var_error=1
     fi
-    if [ -z "$TERRA_API_TOKEN" ]; then
-        log_w "Variable TERRA_API_TOKEN is empty."
+    if [ -z "$TERRA_API_KEY" ]; then
+        log_w "Variable TERRA_API_KEY is empty."
         var_error=1
     fi
     if [[ "$var_error" == "1" ]]; then
@@ -62,9 +63,9 @@ config_sm_properties_do(){
     local terra_port_new="terra.port=8083"
     
     local terra_token_pattern='#terra.token=.*'
-    local terra_token_new="terra.token=${TERRA_API_TOKEN}"
+    local terra_token_new="terra.token=${TERRA_API_KEY}"
     
-    sudo sed -i -e "s|$terra_region_pattern|$terra_region_new|" -e "s|$terra_instance_name_pattern|$terra_instance_name_new|" -e "s|$terra_host_pattern|$terra_host_new|" -e "s|$terra_port_pattern|$terra_port_new|" -e "s|$terra_token_pattern|$terra_token_new|" "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
+    sed -i -e "s|$terra_region_pattern|$terra_region_new|" -e "s|$terra_instance_name_pattern|$terra_instance_name_new|" -e "s|$terra_host_pattern|$terra_host_new|" -e "s|$terra_port_pattern|$terra_port_new|" -e "s|$terra_token_pattern|$terra_token_new|" "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
     
 }
 
@@ -109,25 +110,25 @@ config_sm_properties_main(){
 
     fi
 
-    local db_host_pattern='config.dbHost={host}'
+    local db_host_pattern='config.dbHost=.*'
     local db_host_new="config.dbHost=${DB_HOST}"
 
-    local db_port_pattern='config.dbPort=3306'
+    local db_port_pattern='config.dbPort=.*'
     local db_port_new="config.dbPort=${DB_PORT}"
 
-    local db_user_pattern='config.dbUser={username}'
+    local db_user_pattern='config.dbUser=.*'
     local db_user_new="config.dbUser=${DB_USER}"
 
-    local db_pass_pattern='config.dbPass={password}'
+    local db_pass_pattern='config.dbPass=.*'
     local db_pass_new="config.dbPass=${DB_PASSWORD}"
 
-    local node_prefix_pattern='instancecontroller.instanceNamePrefix={unique-value}'
+    local node_prefix_pattern='instancecontroller.instanceNamePrefix=.*'
     local node_prefix_new="instancecontroller.instanceNamePrefix=${NODE_PREFIX_NAME}"
 
-    local node_cluster_password_pattern='cluster.password=changeme'
+    local node_cluster_password_pattern='cluster.password=.*'
     local node_cluster_password_new="cluster.password=${NODE_CLUSTER_KEY}"
 
-    local node_api_token_pattern='serverapi.accessToken={node api security token}'
+    local node_api_token_pattern='serverapi.accessToken=.*'
     local node_api_token_new="serverapi.accessToken=${NODE_API_KEY}"
 
     local sm_rest_token_pattern='rest.administratorToken='
@@ -136,7 +137,7 @@ config_sm_properties_main(){
     local sm_proxy_enabled_pattern='proxy.enabled=false'
     local sm_proxy_enabled_new='proxy.enabled=true'
 
-    sudo sed -i -e "s|$db_host_pattern|$db_host_new|" -e "s|$db_port_pattern|$db_port_new|" -e "s|$db_user_pattern|$db_user_new|" -e "s|$db_pass_pattern|$db_pass_new|" -e "s|$node_prefix_pattern|$node_prefix_new|" -e "s|$node_cluster_password_pattern|$node_cluster_password_new|" -e "s|$node_api_token_pattern|$node_api_token_new|" -e "s|$sm_rest_token_pattern|$sm_rest_token_new|" -e "s|$sm_proxy_enabled_pattern|$sm_proxy_enabled_new|" "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
+    sed -i -e "s|$db_host_pattern|$db_host_new|" -e "s|$db_port_pattern|$db_port_new|" -e "s|$db_user_pattern|$db_user_new|" -e "s|$db_pass_pattern|$db_pass_new|" -e "s|$node_prefix_pattern|$node_prefix_new|" -e "s|$node_cluster_password_pattern|$node_cluster_password_new|" -e "s|$node_api_token_pattern|$node_api_token_new|" -e "s|$sm_rest_token_pattern|$sm_rest_token_new|" -e "s|$sm_proxy_enabled_pattern|$sm_proxy_enabled_new|" "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
 }
 
 
@@ -209,12 +210,17 @@ config_sm_applicationContext(){
 }
 
 config_sm_cors(){
-    log_i "Set CORS * in $RED5_HOME/webapps/streammanager/WEB-INF/web.xml"
+    log_i "Configuring CORS in $RED5_HOME/webapps/streammanager/WEB-INF/web.xml"
 
-    local STR1="<filter>\n<filter-name>CorsFilter</filter-name>\n<filter-class>org.apache.catalina.filters.CorsFilter</filter-class>\n<init-param>\n<param-name>cors.allowed.origins</param-name>\n<param-value>*</param-value>\n</init-param>\n<init-param>\n<param-name>cors.exposed.headers</param-name>\n<param-value>Access-Control-Allow-Origin</param-value>\n</init-param>\n<init-param>\n<param-name>cors.allowed.methods</param-name>\n<param-value>GET, POST, PUT, DELETE</param-value>\n</init-param>\n<async-supported>true</async-supported>\n</filter>"
-    local STR2="\n<filter-mapping>\n<filter-name>CorsFilter</filter-name>\n<url-pattern>/api/*</url-pattern>\n</filter-mapping>"
-    
-    sed -i "/<\/web-app>/i $STR1 $STR2" "$RED5_HOME/webapps/streammanager/WEB-INF/web.xml"
+    if grep -q "org.apache.catalina.filters.CorsFilter" "$RED5_HOME/webapps/streammanager/WEB-INF/web.xml" ; then
+        log_i "org.apache.catalina.filters.CorsFilter exist in the file web.xml - Start old style CORS configuration..."
+
+        local STR1="<filter>\n<filter-name>CorsFilter</filter-name>\n<filter-class>org.apache.catalina.filters.CorsFilter</filter-class>\n<init-param>\n<param-name>cors.allowed.origins</param-name>\n<param-value>*</param-value>\n</init-param>\n<init-param>\n<param-name>cors.exposed.headers</param-name>\n<param-value>Access-Control-Allow-Origin</param-value>\n</init-param>\n<init-param>\n<param-name>cors.allowed.methods</param-name>\n<param-value>GET, POST, PUT, DELETE</param-value>\n</init-param>\n<async-supported>true</async-supported>\n</filter>"
+        local STR2="\n<filter-mapping>\n<filter-name>CorsFilter</filter-name>\n<url-pattern>/api/*</url-pattern>\n</filter-mapping>"
+        sed -i "/<\/web-app>/i $STR1 $STR2" "$RED5_HOME/webapps/streammanager/WEB-INF/web.xml"
+    else
+        log_i "org.apache.catalina.filters.CorsFilter doesn't exist in the file web.xml - Leave it without changes."
+    fi
 }
 
 config_whip_whep(){
@@ -227,7 +233,7 @@ config_whip_whep(){
         log_i "Change from: com.red5pro.whip.servlet.WhipEndpoint to com.red5pro.whip.servlet.WHProxy"
         local servlet_whipendpoint='com.red5pro.whip.servlet.WhipEndpoint'
         local servlet_whipendpoint_new="com.red5pro.whip.servlet.WHProxy"
-        sudo sed -i -e "s|$servlet_whipendpoint|$servlet_whipendpoint_new|" "$live_web_config"
+        sed -i -e "s|$servlet_whipendpoint|$servlet_whipendpoint_new|" "$live_web_config"
     fi
 
     if grep "com.red5pro.whip.servlet.WhepEndpoint" $live_web_config &> /dev/null
@@ -235,7 +241,7 @@ config_whip_whep(){
         log_i "Changed from: com.red5pro.whip.servlet.WhepEndpoint to com.red5pro.whip.servlet.WHProxy"
         local servlet_whipendpoint='com.red5pro.whip.servlet.WhepEndpoint'
         local servlet_whipendpoint_new="com.red5pro.whip.servlet.WHProxy"
-        sudo sed -i -e "s|$servlet_whipendpoint|$servlet_whipendpoint_new|" "$live_web_config"
+        sed -i -e "s|$servlet_whipendpoint|$servlet_whipendpoint_new|" "$live_web_config"
     fi
 }
 
@@ -250,8 +256,21 @@ config_mysql(){
         mysql -h $DB_HOST -P $DB_PORT -u $DB_USER -p${DB_PASSWORD} cluster < $RED5_HOME/webapps/streammanager/WEB-INF/sql/cluster.sql
     else 
         log_i "Database cluster was configured by another StreamManager. Skip."
-        mysql -h $DB_HOST -P $DB_PORT -u $DB_USER -p${DB_PASSWORD} cluster < $RED5_HOME/webapps/streammanager/WEB-INF/sql/cluster.sql
     fi
+}
+
+config_sm_ip(){
+    log_i "Start configuration SM_IP in the Stream Manager properties for single and multiple Stream Managers (SM)"
+
+    if [ -z "$SM_IP" ]; then
+        log_w "Variable SM_IP is empty."
+        exit 1
+    fi
+    
+    local streammanager_ip_pattern='streammanager.ip=.*'
+    local streammanager_ip_new="streammanager.ip=${SM_IP}"
+    
+    sed -i -e "s|$streammanager_ip_pattern|$streammanager_ip_new|"  "$RED5_HOME/webapps/streammanager/WEB-INF/red5-web.properties"
 }
 
 install_sm
@@ -261,4 +280,4 @@ config_whip_whep
 config_sm_properties_main
 config_sm_properties_do
 config_mysql
-
+config_sm_ip

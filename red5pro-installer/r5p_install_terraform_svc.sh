@@ -4,7 +4,7 @@
 # Before start this script you need copy terraform-service-build.zip into the same folder with this script!!!
 ##############################################################################################################
 
-# TERRA_API_TOKEN="abc123"
+# TERRA_API_KEY="abc123"
 # TERRA_PARALLELISM="20"
 # DO_API_TOKEN=""
 # SSH_KEY_NAME=""
@@ -36,8 +36,8 @@ log() {
 check_terraform_variables(){
     log_i "Check TERRAFORM variables..."
     
-    if [ -z "$TERRA_API_TOKEN" ]; then
-        log_w "Variable TERRA_API_TOKEN is empty."
+    if [ -z "$TERRA_API_KEY" ]; then
+        log_w "Variable TERRA_API_KEY is empty."
         var_error=1
     fi
     if [ -z "$TERRA_PARALLELISM" ]; then
@@ -120,7 +120,7 @@ install_terraform_service(){
         exit 1
     fi
     
-    unzip "$CURRENT_DIRECTORY/$TERRA_RCHIVE" -d /usr/local/
+    unzip -q "$CURRENT_DIRECTORY/$TERRA_RCHIVE" -d /usr/local/
     
     rm $TERRA_FOLDER/*_azure*.tf
     rm $TERRA_FOLDER/*_linode*.tf
@@ -137,8 +137,8 @@ install_terraform_service(){
 config_terraform_service(){
     log_i "TERRAFORM SERVICE CONFIGURATION"
 
-    local terra_api_token_pattern='api.accessToken=.*'
-    local terra_api_token_new="api.accessToken=${TERRA_API_TOKEN}"
+    local TERRA_API_KEY_pattern='api.accessToken=.*'
+    local TERRA_API_KEY_new="api.accessToken=${TERRA_API_KEY}"
     
     local terra_parallelism_pattern='terra.parallelism=.*'
     local terra_parallelism_new="terra.parallelism=${TERRA_PARALLELISM}"
@@ -161,7 +161,7 @@ config_terraform_service(){
     local db_password_pattern='config.dbPass=.*'
     local db_password_new="config.dbPass=${DB_PASSWORD}"
     
-    sed -i -e "s|$terra_api_token_pattern|$terra_api_token_new|" -e "s|$terra_parallelism_pattern|$terra_parallelism_new|" -e "s|$do_api_token|$do_api_token_new|" -e "s|$do_ssh_key_name|$do_ssh_key_name_new|" -e "s|$db_host_pattern|$db_host_new|" -e "s|$db_port_pattern|$db_port_new|" -e "s|$db_user_pattern|$db_user_new|" -e "s|$db_password_pattern|$db_password_new|" "$TERRA_FOLDER/application.properties"
+    sed -i -e "s|$TERRA_API_KEY_pattern|$TERRA_API_KEY_new|" -e "s|$terra_parallelism_pattern|$terra_parallelism_new|" -e "s|$do_api_token|$do_api_token_new|" -e "s|$do_ssh_key_name|$do_ssh_key_name_new|" -e "s|$db_host_pattern|$db_host_new|" -e "s|$db_port_pattern|$db_port_new|" -e "s|$db_user_pattern|$db_user_new|" -e "s|$db_password_pattern|$db_password_new|" "$TERRA_FOLDER/application.properties"
 }
 
 start_terraform_service(){
@@ -177,13 +177,16 @@ start_terraform_service(){
     
 }
 
+if [[ "$TF_SVC_ENABLE" == true ]]; then
+    log_i "TF_SVC_ENABLE is set to true, Installing Red5 Pro Terraform Service..."
+    export LC_ALL="en_US.UTF-8"
+    export LC_CTYPE="en_US.UTF-8"
 
-export LC_ALL="en_US.UTF-8"
-export LC_CTYPE="en_US.UTF-8"
-
-check_terraform_variables
-install_pkg
-install_terraform_service
-config_terraform_service
-start_terraform_service
-
+    check_terraform_variables
+    install_pkg
+    install_terraform_service
+    config_terraform_service
+    start_terraform_service
+else
+    log_i "SKIP Red5 Pro Terraform Service installation."
+fi

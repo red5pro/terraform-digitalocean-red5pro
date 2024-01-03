@@ -8,13 +8,13 @@ variable "name" {
   }
 }
 
-variable "digital_ocean_project" {
-  description = "Create a new project in Digital Ocean to access all created resources. true = create new project, false = use default project in DO."
+variable "project_create" {
+  description = "Create a new project in Digital Ocean to access all created resources. true = create new project, false = use existing project in DO."
   default = true
 }
 
 variable "project_name" {
-  description = "A unique project used in digital ocean to create all resources. When do_project = true"
+  description = "A unique project used in digital ocean to create all resources. When project_create = true or existing project name. When project_create = false."
   type = string
   default = ""
 }
@@ -28,16 +28,6 @@ variable "type" {
     error_message = "The type value must be a valid! Example: single, cluster, autoscaling"
   }
 }
-variable "ubuntu_version" {
-  description = "Ubuntu version which is going to be used for creating droplet in Digital Ocean"
-  type = string
-  default = "20.04"
-  validation {
-    condition = var.ubuntu_version == "20.04" || var.ubuntu_version == "22.04"
-    error_message = "Please specify the correct ubuntu version, it can either be 20.04 or 22.04"
-  }
-}
-
 variable "path_to_red5pro_build" {
   description = "Path to the Red5 Pro build zip file, absolute path or relative path. https://account.red5pro.com/downloads. Example: /home/ubuntu/red5pro-server-0.0.0.b0-release.zip"
   type        = string
@@ -54,12 +44,17 @@ variable "digital_ocean_region" {
   default     = ""
 }
 
-variable "digital_ocean_token" {
+variable "digital_ocean_access_token" {
   description = "DO token to access the services of cloud"
   default     = ""
 }
 
 # VPC configuration
+variable "vpc_cidr_block" {
+  description = "Digital Ocean VPC IP range for Red5 Pro"
+  type        = string
+  default     = "10.5.0.0/16"
+}
 variable "vpc_create" {
   description = "Create a new VPC or use an existing one. true = create new, false = use existing"
   type        = bool
@@ -72,17 +67,17 @@ variable "vpc_name_existing" {
 }
 
 # Red5 Pro Terraform Service properties
-variable "dedicated_terra_host_create" {
+variable "terraform_service_instance_create" {
   description = "Create a dedicated DO droplet for Red5 pro Terraform Service "
   type        = bool
   default     = true
 }
-variable "terra_api_token" {
-  description = "API Token for Teraform Service to autherize the APIs"
+variable "terraform_service_api_key" {
+  description = "API key for Teraform Service to autherize the APIs"
   type        = string
   default     = ""
 }
-variable "terra_parallelism" {
+variable "terraform_service_parallelism" {
   description = "Number of Terraform concurrent operations and used for non-standard rate limiting"
   type        = string
   default     = "20"
@@ -284,10 +279,14 @@ variable "outbound_rules" {
 }
 
 # Load Balancer Configuration
-variable "lb_size_count" {
-  description = " The size of the Load Balancer. It must be in the range (1, 100)."
-  type = number
-  default = 2
+variable "lb_size" {
+  description = " The size of the Load Balancer.  It must be either lb-small, lb-medium, or lb-large."
+  type = string
+  default = "lb-small"
+  validation {
+    condition     = var.lb_size == "lb-small" || var.lb_size == "lb-medium" || var.lb_size == "lb-large"
+    error_message = "The value must be a valid! Example: lb-small, lb-medium, lb-large"
+  }
 }
 
 variable "lb_ssl_create" {
@@ -296,48 +295,20 @@ variable "lb_ssl_create" {
   default = true
 }
 
-variable "lb_ssl_certificate_type" {
-  description = "Type of certificate to create SSL for Load Balancer in Digital Ocean(custom or lets_encrypt)"
-  type        = string
-  default     = "custom"
-  validation {
-    condition     = var.lb_ssl_certificate_type == "custom" || var.lb_ssl_certificate_type == "lets_encrypt"
-    error_message = "The type value must be a valid! Example: custom or lets_encrypt"
-  }
-}
-
-variable "existing_lb_domain_name" {
-  description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = lets_encrypt, Load balancer exiting fully qualified domain names (FQDNs) for which the certificate will be issued. Only when 'lb_ssl_certificate_type' == lets_encrypt"
-  type = string
-  default = ""
-}
-
-variable "lb_exist_ssl_cert_name" {
-   description = "If 'lb_ssl_create' = false, Use existing SSL certificate for Load Balancer already uploaded in DO (autoscaling)"
-   type = string
-   default = ""
-}
-
-variable "new_lb_cert_name" {
-  description = "If 'lb_ssl_create' = true, New Load Balancer certificate name"
-  type = string
-  default = ""
-}
-
 variable "cert_fullchain" {
-  description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS CA Certificate Fullchain (autoscaling)"
+  description = "If 'lb_ssl_create' = true File path for SSL/TLS CA Certificate Fullchain (autoscaling)"
   type        = string
   default     = ""
 }
 
 variable "cert_private_key" {
-  description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS Certificate Private Key (autoscaling)"
+  description = "If 'lb_ssl_create' = true File path for SSL/TLS Certificate Private Key (autoscaling)"
   type        = string
   default     = ""
 }
 
 variable "leaf_public_cert" {
-  description = "If 'lb_ssl_create' = true && 'lb_ssl_certificate_type' = custom, File path for SSL/TLS Certificate Public Cert (autoscaling)"
+  description = "If 'lb_ssl_create' = true File path for SSL/TLS Certificate Public Cert (autoscaling)"
   type        = string
   default     = ""
 }
@@ -363,6 +334,26 @@ variable "mysql_password" {
   type        = string
   default     = ""
   sensitive = true
+  # validation {
+  #   condition = length(var.mysql_password) >= 8
+  #   error_message = "Password must have at least 8 characters."
+  # }
+  # validation {
+  #   condition = can(regex("[A-Z]", var.mysql_password))
+  #   error_message = "Password must contain at least one uppercase letter."
+  # }
+  # validation {
+  #   condition = can(regex("[a-z]", var.mysql_password))
+  #   error_message = "Password must contain at least one lowercase letter."
+  # }
+  # validation {
+  #   condition = can(regex("[^a-zA-Z0-9]", var.mysql_password))
+  #   error_message = "Password must contain at least one character that isn't a letter or a digit."
+  # }
+  # validation {
+  #   condition = can(regex("[0-9]", var.mysql_password))
+  #   error_message = "Password must contain at least one digit."
+  # }
 }
 variable "mysql_port" {
   description = "MySQL port if mysql_database_create = false"
@@ -389,6 +380,15 @@ variable "ssh_private_key_path" {
 }
 
 # Stream Manager Configuration
+variable "stream_managers_amount" {
+  description = "Total number stream manager required to setup in autoscale."
+  type        = number
+  default     = 1
+  validation {
+    condition     = var.stream_managers_amount >= 1
+    error_message = "The stream manager amount should be greater than or equal to '1'. The default count is '1'."
+  }
+}
 variable "stream_manager_droplet_size" {
   description = "Red5 Pro Stream Manager server droplet size"
   type        = string
@@ -859,4 +859,176 @@ variable "node_group_relays_capacity" {
   description = "Connections capacity for Relays"
   type        = number
   default     = 30
+}
+
+
+# Video on demand using Cloud Storage
+variable "red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+variable "origin_red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "origin_red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "origin_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "origin_red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "origin_red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "origin_red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+
+variable "edge_red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "edge_red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "edge_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "edge_red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "edge_red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "edge_red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+variable "transcoder_red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "transcoder_red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "transcoder_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "transcoder_red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "transcoder_red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "transcoder_red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+
+variable "relay_red5pro_cloudstorage_enable" {
+  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
+  type        = bool
+  default     = false
+}
+variable "relay_red5pro_cloudstorage_digitalocean_spaces_access_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "relay_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "relay_red5pro_cloudstorage_digitalocean_spaces_name" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "relay_red5pro_cloudstorage_digitalocean_spaces_region" {
+  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
+  type        = string
+  default     = ""
+}
+variable "relay_red5pro_cloudstorage_postprocessor_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
+  type        = bool
+  default     = false
+}
+variable "ubuntu_image_version" {
+  type = map(string)
+  default = {
+    18.04 = "ubuntu-18-04-x64"
+    20.04 = "ubuntu-20-04-x64"
+    22.04 = "ubuntu-22-04-x64"
+  }
+}
+variable "ubuntu_version" {
+  description = "Ubuntu version which is going to be used for creating droplet in Digital Ocean"
+  type        = string
+  default     = "22.04"
+  validation {
+    condition = var.ubuntu_version == "18.04" || var.ubuntu_version == "20.04" || var.ubuntu_version == "22.04"
+    error_message = "Please specify the correct ubuntu version, it can either be 18.04, 20.04 or 22.04"
+  }
 }
