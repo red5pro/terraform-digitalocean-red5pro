@@ -838,8 +838,13 @@ resource "null_resource" "delete_node_relay" {
 }
 
 ################################################################################
-# Create node group (Stream Manager API)
+# Create/Delete node group (Stream Manager API)
 ################################################################################
+resource "time_sleep" "wait_for_delete_nodegroup" {
+  count            = var.node_group_create ? 1 : 0
+  depends_on       =  [ digitalocean_droplet.red5pro_sm[0] ]
+  destroy_duration = "90s"
+}
 
 resource "null_resource" "node_group" {
   count = var.node_group_create ? 1 : 0
@@ -879,5 +884,5 @@ resource "null_resource" "node_group" {
       RELAY_IMAGE_NAME           = "${try(digitalocean_droplet_snapshot.relay-snapshot[0].name, null)}"
     }
   }
-  depends_on =  [digitalocean_droplet.red5pro_sm]
+  depends_on =  [time_sleep.wait_for_delete_nodegroup[0]]
 }
