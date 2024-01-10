@@ -842,7 +842,13 @@ resource "null_resource" "delete_node_relay" {
 ################################################################################
 resource "time_sleep" "wait_for_delete_nodegroup" {
   count            = var.node_group_create ? 1 : 0
-  depends_on       =  [ digitalocean_droplet.red5pro_sm[0] ]
+  depends_on = [ 
+    local.stream_managers_id,
+    digitalocean_firewall.red5pro_sm_fw[0],
+    digitalocean_droplet.red5pro_terraform_service[0],
+    digitalocean_firewall.red5pro_terraform_service_fw[0],
+    digitalocean_loadbalancer.red5pro_lb[0],
+  ]
   destroy_duration = "90s"
 }
 
