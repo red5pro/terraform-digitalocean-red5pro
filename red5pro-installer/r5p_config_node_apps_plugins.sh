@@ -27,6 +27,8 @@
 # NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME=
 # NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION=
 # NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE=false
+# R5P_WEBINAR_ENABLE=false
+# KAFKA_HOST=
 
 RED5_HOME="/usr/local/red5pro"
 
@@ -244,4 +246,34 @@ config_node_apps_plugins(){
     fi
 }
 
-config_node_apps_plugins
+config_conference_message_svc() {
+    log_i "Configuration ConferenceMessageService bean in ${RED5_HOME}/conf/red5pro-activation.xml"
+
+    sed -i '/<!-- Uncomment to enable conferenceMessageService start/d' "${RED5_HOME}/conf/red5pro-activation.xml"
+    sed -i '/Uncomment to enable conferenceMessageService end -->/d' "${RED5_HOME}/conf/red5pro-activation.xml"
+}
+
+config_kafka_hosts() {
+    log_i "Configure Kafka Host in ${RED5_HOME}/conf/red5pro-activation.xml"
+
+    local def_kafka_host='<property name="address" value="localhost:9092"/>'
+    local def_kafka_host_new='<property name="address" value="'${KAFKA_HOST}':9092"/>'
+
+    sed -i -e "s|$def_kafka_host|$def_kafka_host_new|" "${RED5_HOME}/conf/red5pro-activation.xml"
+}
+
+if [[ "$R5P_WEBINAR_ENABLE" == "true" ]]; then
+    if [ -z "$KAFKA_HOST" ]; then
+        log_w "Variable KAFKA_HOST is empty."
+        var_error=1
+    fi
+    if [[ "$var_error" == "1" ]]; then
+        log_e "One or more variables are empty. EXIT!"
+        exit 1
+    fi
+    config_node_apps_plugins
+    config_conference_message_svc
+    config_kafka_hosts
+else
+    config_node_apps_plugins
+fi

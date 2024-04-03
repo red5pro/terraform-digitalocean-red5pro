@@ -1,0 +1,15 @@
+# Install to /etc/systemd/system/kafka.service
+
+[Unit]
+Requires=network.target remote-fs.target
+After=network.target remote-fs.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/bin/sh -c '/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/kraft/server.properties > /var/log/kafka/kafka.log 2>&1'
+ExecStop=/usr/local/kafka/bin/kafka-server-stop.sh
+Restart=on-abnormal
+
+[Install]
+WantedBy=multi-user.target 

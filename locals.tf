@@ -23,6 +23,8 @@ locals {
   lb_certificate_name                  = local.autoscaling && var.lb_ssl_create ? digitalocean_certificate.new_lb_cert[0].name : null
   lb_ip                                = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : null
   stream_managers_amount               = local.autoscaling ? var.stream_managers_amount : local.cluster ? 1 : 0
+  kafka_host                           = local.autoscaling ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : local.cluster && var.terraform_service_instance_create ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : "localhost"
+  node_kafka_host                      = local.autoscaling ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : local.cluster && var.terraform_service_instance_create ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : local.stream_manager_ip
   stream_managers_id                   = [ for red5pro_sm in digitalocean_droplet.red5pro_sm : red5pro_sm.id ]
   stream_managers_urn                  = [ for red5pro_sm in digitalocean_droplet.red5pro_sm : red5pro_sm.urn ]
   project_resources                    = concat(
