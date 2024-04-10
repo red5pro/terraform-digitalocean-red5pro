@@ -93,7 +93,9 @@ module "red5pro" {
   origin_red5pro_cloudstorage_digitalocean_spaces_name           = "bucket-example-name"     # Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)
   origin_red5pro_cloudstorage_digitalocean_spaces_region         = "nyc1"                    # Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces) (Valid locations are: ams3, fra1, nyc1, nyc3, sfo3, sgp1)
   origin_red5pro_cloudstorage_postprocessor_enable               = false                     # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)
- 
+  origin_red5pro_cloudstorage_spaces_file_access                 = true                      # true - Cloud storage files private access only   false - Cloud storage files public access
+  origin_red5pro_cloudstorage_postprocessor_mp4_enable           = true                      # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor to convert flv to MP4 (https://www.red5.net/docs/protocols/converting/overview/)
+
 # Red5 Pro autoscaling Node group - (Optional)
   node_group_create                    = true                       # Linux or Mac OS only. true - create new Stream Manager Node group, false - not create new Stream Manager Node group
   node_group_name                      = "example-node-group"       # Node group name

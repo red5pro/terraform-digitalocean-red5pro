@@ -149,7 +149,7 @@ start_kafka() {
 }
 
 if [[ "$TF_SVC_ENABLE" == true && "$R5P_WEBINAR_ENABLE" == true ]]; then
-    log_i "TF_SVC_ENABLE is set to true, Installing Red5 Pro Kafka Service on Terraform service server"
+    log_i "TF_SVC_ENABLE and R5P_WEBINAR_ENABLE is set to true, Installing Red5 Pro Kafka Service on Terraform service server"
     export LC_ALL="en_US.UTF-8"
     export LC_CTYPE="en_US.UTF-8"
     install_pkg

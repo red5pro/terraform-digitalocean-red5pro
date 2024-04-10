@@ -137,11 +137,6 @@ config_conference_api() {
 
     log_i "Configuration conference API properties in ${RED5_HOME}/webapps/conference-api/WEB-INF/applicationContext.xml"
 
-    ESCAPED_FACEBOOK_APP_TOKEN=$(echo "$FACEBOOK_APP_TOKEN" | sed 's/|/\\|/g')
-
-    local def_facebook_app_token='<property name="facebookAppToken" value=.*'
-    local def_facebook_app_token_new="<property name=\"facebookAppToken\" value=\"${ESCAPED_FACEBOOK_APP_TOKEN}\" />"
-
     local def_db_host='<property name="dbHost" value=.*'
     local def_db_host_new='<property name="dbHost" value="'${DB_HOST}'" />'
     
@@ -175,7 +170,7 @@ config_conference_api() {
     local def_kafka_host='<property name="bootstrapAddress" value=.*'
     local def_kafka_host_new='<property name="bootstrapAddress" value="'${KAFKA_HOST}':9092" />'
 		
-	sed -i -e "s|$def_facebook_app_token|$def_facebook_app_token_new|" -e "s|$def_db_host|$def_db_host_new|" -e "s|$def_db_port|$def_db_port_new|" -e "s|$def_db_user|$def_db_user_new|" -e "s|$def_db_password|$def_db_password_new|" -e "s|$def_smtp_host|$def_smtp_host_new|" -e "s|$def_smtp_port|$def_smtp_port_new|" -e "s|$def_smtp_username|$def_smtp_username_new|" -e "s|$def_smtp_password|$def_smtp_password_new|" -e "s|$def_from_address|$def_from_address_new|" -e "s|$def_frontend_server|$def_frontend_server_new|" -e "s|$def_kafka_host|$def_kafka_host_new|" "${RED5_HOME}/webapps/conference-api/WEB-INF/applicationContext.xml"
+	sed -i -e "s|$def_db_host|$def_db_host_new|" -e "s|$def_db_port|$def_db_port_new|" -e "s|$def_db_user|$def_db_user_new|" -e "s|$def_db_password|$def_db_password_new|" -e "s|$def_smtp_host|$def_smtp_host_new|" -e "s|$def_smtp_port|$def_smtp_port_new|" -e "s|$def_smtp_username|$def_smtp_username_new|" -e "s|$def_smtp_password|$def_smtp_password_new|" -e "s|$def_from_address|$def_from_address_new|" -e "s|$def_frontend_server|$def_frontend_server_new|" -e "s|$def_kafka_host|$def_kafka_host_new|" "${RED5_HOME}/webapps/conference-api/WEB-INF/applicationContext.xml"
 
 }
 
