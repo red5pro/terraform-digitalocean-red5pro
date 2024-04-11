@@ -883,6 +883,16 @@ variable "red5pro_cloudstorage_postprocessor_enable" {
   type        = bool
   default     = false
 }
+variable "red5pro_cloudstorage_spaces_file_access" {
+  description = "Red5 Pro server cloud storage files public access"
+  type        = bool
+  default     = false
+}
+variable "red5pro_cloudstorage_postprocessor_mp4_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor to convert flv to MP4 (https://www.red5.net/docs/protocols/converting/overview/)"
+  type        = bool
+  default     = false
+}
 variable "origin_red5pro_cloudstorage_enable" {
   description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
   type        = bool

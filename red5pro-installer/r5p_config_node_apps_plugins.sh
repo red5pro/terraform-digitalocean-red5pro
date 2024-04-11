@@ -214,7 +214,7 @@ config_node_apps_plugins(){
         do_spaces_bucket_name_new="do.bucket.name=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME}"
         do_spaces_region="do.bucket.location=.*"
         do_spaces_region_new="do.bucket.location=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION}"
-        do_spaces_bucket_files_access="# do.files.private=*"
+        do_spaces_bucket_files_access="# do.files.private=.*"
         do_spaces_bucket_files_access_new="do.files.private=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS}"
 
 

@@ -145,6 +145,8 @@ resource "digitalocean_droplet" "red5pro_single" {
       "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME='${var.red5pro_cloudstorage_digitalocean_spaces_name}'",
       "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION='${var.red5pro_cloudstorage_digitalocean_spaces_region}'",
       "export NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE='${var.red5pro_cloudstorage_postprocessor_enable}'",
+      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS='${var.red5pro_cloudstorage_spaces_file_access}'",
+      "export NODE_CLOUDSTORAGE_POSTPROCESSOR_MP4_ENABLE='${var.red5pro_cloudstorage_postprocessor_mp4_enable}'",
       "export SSL_ENABLE='${var.https_letsencrypt_enable}'",
       "export SSL_DOMAIN='${var.https_letsencrypt_certificate_domain_name}'",
       "export SSL_MAIL='${var.https_letsencrypt_certificate_email}'",
