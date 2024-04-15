@@ -27,8 +27,11 @@
 # NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME=
 # NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION=
 # NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE=false
+# R5P_WEBINAR_ENABLE=false
+# KAFKA_HOST=
 
 RED5_HOME="/usr/local/red5pro"
+PACKAGES_DEFAULT=(jsvc ntp ffmpeg)
 
 log_i() {
     log
@@ -48,6 +51,41 @@ log_e() {
 }
 log() {
     echo -n "[$(date '+%Y-%m-%d %H:%M:%S')]"
+}
+
+install_pkg(){
+    for i in {1..5};
+    do
+        
+        local install_issuse=0;
+        apt-get -y update --fix-missing &> /dev/null
+        
+        for index in ${!PACKAGES[*]}
+        do
+            log_i "Install utility ${PACKAGES[$index]}"
+            apt-get install -y ${PACKAGES[$index]} &> /dev/null
+        done
+        
+        for index in ${!PACKAGES[*]}
+        do
+            PKG_OK=$(dpkg-query -W --showformat='${Status}\n' ${PACKAGES[$index]}|grep "install ok installed")
+            if [ -z "$PKG_OK" ]; then
+                log_i "${PACKAGES[$index]} utility didn't install, didn't find MIRROR !!! "
+                install_issuse=$(($install_issuse+1));
+            else
+                log_i "${PACKAGES[$index]} utility installed"
+            fi
+        done
+        
+        if [ $install_issuse -eq 0 ]; then
+            break
+        fi
+        if [ $i -ge 5 ]; then
+            log_e "Something wrong with packages installation!!! Exit."
+            exit 1
+        fi
+        sleep 20
+    done
 }
 
 config_node_apps_plugins(){
@@ -157,6 +195,10 @@ config_node_apps_plugins(){
             log_e "Parameter NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION is empty. EXIT."
             exit 1
         fi
+        if [ -z "$NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS" ]; then
+            log_e "Parameter NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS is empty. EXIT."
+            exit 1
+        fi
 
         log_i "Config Digital Ocean Cloudstorage plugin: $RED5_HOME/conf/cloudstorage-plugin.properties"
         do_service="#services=com.red5pro.media.storage.digitalocean.DOUploader,com.red5pro.media.storage.digitalocean.DOBucketLister"
@@ -172,15 +214,32 @@ config_node_apps_plugins(){
         do_spaces_bucket_name_new="do.bucket.name=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME}"
         do_spaces_region="do.bucket.location=.*"
         do_spaces_region_new="do.bucket.location=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION}"
+        do_spaces_bucket_files_access="# do.files.private=.*"
+        do_spaces_bucket_files_access_new="do.files.private=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS}"
 
 
-        sed -i -e "s|$do_service|$do_service_new|" -e "s|$max_transcode_min|$max_transcode_min_new|" -e "s|$do_spaces_access_key|$do_spaces_access_key_new|" -e "s|$do_spaces_secret_key|$do_spaces_secret_key_new|" -e "s|$do_spaces_bucket_name|$do_spaces_bucket_name_new|" -e "s|$do_spaces_region|$do_spaces_region_new|" "$RED5_HOME/conf/cloudstorage-plugin.properties"
+
+        sed -i -e "s|$do_service|$do_service_new|" -e "s|$max_transcode_min|$max_transcode_min_new|" -e "s|$do_spaces_access_key|$do_spaces_access_key_new|" -e "s|$do_spaces_secret_key|$do_spaces_secret_key_new|" -e "s|$do_spaces_bucket_name|$do_spaces_bucket_name_new|" -e "s|$do_spaces_region|$do_spaces_region_new|" -e "s|$do_spaces_bucket_files_access|$do_spaces_bucket_files_access_new|" "$RED5_HOME/conf/cloudstorage-plugin.properties"
 
         if [[ "$NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE" == "true" ]]; then
-            log_i "Config Digital Ocean Cloudstorage plugin - PostProcessor to FLV: $RED5_HOME/conf/red5-common.xml"
 
-            STR1='<property name="writerPostProcessors">\n<set>\n<value>com.red5pro.media.processor.DOUploaderPostProcessor</value>\n</set>\n</property>'
-            sed -i "/Writer post-process example/i $STR1" "$RED5_HOME/conf/red5-common.xml"
+            if [[ "$NODE_CLOUDSTORAGE_POSTPROCESSOR_MP4_ENABLE" == "true" ]]; then
+                PACKAGES=("${PACKAGES_DEFAULT[@]}")
+                install_pkg
+                log_i "Config Digital Ocean Cloudstorage plugin - PostProcessor to FLV and MP4: $RED5_HOME/conf/red5-common.xml"
+
+                STR1='<property name="writerPostProcessors">\n<set>\n<value>com.red5pro.media.processor.OrientationPostProcessor</value>\n<value>com.red5pro.media.processor.DOUploaderPostProcessor</value>\n</set>\n</property>'
+                sed -i "/Writer post-process example/i $STR1" "$RED5_HOME/conf/red5-common.xml"
+                
+                log_i "Copy FFMPEG to /usr/local/red5pro/"
+                mv /usr/bin/ffmpeg /usr/local/red5pro/ffmpeg
+                chmod +x /usr/local/red5pro/ffmpeg
+            else
+                log_i "Config Digital Ocean Cloudstorage plugin - PostProcessor to FLV: $RED5_HOME/conf/red5-common.xml"
+
+                STR1='<property name="writerPostProcessors">\n<set>\n<value>com.red5pro.media.processor.DOUploaderPostProcessor</value>\n</set>\n</property>'
+                sed -i "/Writer post-process example/i $STR1" "$RED5_HOME/conf/red5-common.xml"
+            fi
         fi
 
         log_i "Config Digital Ocean Cloudstorage plugin - Live app DOFilenameGenerator in: $RED5_HOME/webapps/live/WEB-INF/red5-web.xml ..."
@@ -244,4 +303,34 @@ config_node_apps_plugins(){
     fi
 }
 
-config_node_apps_plugins
+config_conference_message_svc() {
+    log_i "Configuration ConferenceMessageService bean in ${RED5_HOME}/conf/red5pro-activation.xml"
+
+    sed -i '/<!-- Uncomment to enable conferenceMessageService start/d' "${RED5_HOME}/conf/red5pro-activation.xml"
+    sed -i '/Uncomment to enable conferenceMessageService end -->/d' "${RED5_HOME}/conf/red5pro-activation.xml"
+}
+
+config_kafka_hosts() {
+    log_i "Configure Kafka Host in ${RED5_HOME}/conf/red5pro-activation.xml"
+
+    local def_kafka_host='<property name="address" value="localhost:9092"/>'
+    local def_kafka_host_new='<property name="address" value="'${KAFKA_HOST}':9092"/>'
+
+    sed -i -e "s|$def_kafka_host|$def_kafka_host_new|" "${RED5_HOME}/conf/red5pro-activation.xml"
+}
+
+if [[ "$R5P_WEBINAR_ENABLE" == "true" ]]; then
+    if [ -z "$KAFKA_HOST" ]; then
+        log_w "Variable KAFKA_HOST is empty."
+        var_error=1
+    fi
+    if [[ "$var_error" == "1" ]]; then
+        log_e "One or more variables are empty. EXIT!"
+        exit 1
+    fi
+    config_node_apps_plugins
+    config_conference_message_svc
+    config_kafka_hosts
+else
+    config_node_apps_plugins
+fi

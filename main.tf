@@ -93,6 +93,28 @@ data "digitalocean_vpc" "selected" {
 ################################################################################
 # Red5 Pro Single server (DO Droplet)
 ################################################################################
+resource "digitalocean_reserved_ip" "red5pro_single_reserved_ip" {
+  count    = local.single && var.create_reserved_ip_single_server ? 1 : 0
+  region   = var.digital_ocean_region
+}
+
+data "digitalocean_reserved_ip" "existing_single_server_reserved_ip" {
+  count      = local.autoscaling || local.cluster ? 0 : local.single && var.create_reserved_ip_single_server ? 0 : 1
+  ip_address = var.existing_reserved_ip_address_single_server
+  lifecycle {
+    postcondition {
+      condition     = self.urn != null && self.region == var.digital_ocean_region
+      error_message = "Reserved IP address ${var.existing_reserved_ip_address_single_server} does not exist in region ${var.digital_ocean_region}."
+    }
+  }
+}
+
+resource "digitalocean_reserved_ip_assignment" "single_server_ip_association" {
+  count      = local.single ? 1 : 0
+  ip_address = local.single_server_ip
+  droplet_id =  digitalocean_droplet.red5pro_single[0].id
+}
+
 resource "digitalocean_droplet" "red5pro_single" {
   count    = local.single ? 1 : 0
   name     = "${var.name}-red5-single"
@@ -104,7 +126,7 @@ resource "digitalocean_droplet" "red5pro_single" {
   tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
-    host        = digitalocean_droplet.red5pro_single[0].ipv4_address
+    host        = self.ipv4_address
     type        = "ssh"
     user        = "root"
     private_key = local.ssh_private_key
@@ -145,6 +167,8 @@ resource "digitalocean_droplet" "red5pro_single" {
       "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME='${var.red5pro_cloudstorage_digitalocean_spaces_name}'",
       "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION='${var.red5pro_cloudstorage_digitalocean_spaces_region}'",
       "export NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE='${var.red5pro_cloudstorage_postprocessor_enable}'",
+      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS='${var.red5pro_cloudstorage_spaces_file_access}'",
+      "export NODE_CLOUDSTORAGE_POSTPROCESSOR_MP4_ENABLE='${var.red5pro_cloudstorage_postprocessor_mp4_enable}'",
       "export SSL_ENABLE='${var.https_letsencrypt_enable}'",
       "export SSL_DOMAIN='${var.https_letsencrypt_certificate_domain_name}'",
       "export SSL_MAIL='${var.https_letsencrypt_certificate_email}'",
@@ -159,7 +183,7 @@ resource "digitalocean_droplet" "red5pro_single" {
 
     ]
     connection {
-      host        = digitalocean_droplet.red5pro_single[0].ipv4_address
+      host        = self.ipv4_address
       type        = "ssh"
       user        = "root"
       private_key = local.ssh_private_key
@@ -223,6 +247,28 @@ resource "digitalocean_firewall" "red5pro_sm_fw" {
 ################################################################################
 # Stream manager - (DO droplet)
 ################################################################################
+resource "digitalocean_reserved_ip" "red5pro_sm_reserved_ip" {
+  count    = local.cluster && var.create_reserved_ip_stream_manager ? 1 : 0
+  region   = var.digital_ocean_region
+}
+
+data "digitalocean_reserved_ip" "existing_sm_reserved_ip" {
+  count      = local.single || local.autoscaling ? 0 : local.cluster && var.create_reserved_ip_stream_manager ? 0 : 1
+  ip_address = var.existing_reserved_ip_address_stream_manager
+  lifecycle {
+    postcondition {
+      condition     = self.urn != null && self.region == var.digital_ocean_region
+      error_message = "Reserved IP address ${var.existing_reserved_ip_address_stream_manager} does not exist in region ${var.digital_ocean_region}."
+    }
+  }
+}
+
+resource "digitalocean_reserved_ip_assignment" "sm_ip_association" {
+  count      = local.cluster ? 1 : 0
+  ip_address = local.stream_manager_ip
+  droplet_id =  digitalocean_droplet.red5pro_sm[0].id
+}
+
 # Stream Manager droplet
 resource "digitalocean_droplet" "red5pro_sm" {
   count    = local.stream_managers_amount
@@ -288,12 +334,23 @@ resource "digitalocean_droplet" "red5pro_sm" {
       "export TERRA_PARALLELISM='${var.terraform_service_parallelism}'",
       "export DO_API_TOKEN='${var.digital_ocean_access_token}'",
       "export SSH_KEY_NAME='${local.ssh_key_name}'",
+      # For Webinar configuration
+      "export KAFKA_HOST='${local.kafka_host}'",
+      "export R5P_WEBINAR_ENABLE='${var.red5pro_truetime_studio_webinar_enable}'",
+      "export SMTP_HOST='${var.red5pro_truetime_studio_webinar_smtp_host}'",
+      "export SMTP_USERNAME='${var.red5pro_truetime_studio_webinar_smtp_username}'",
+      "export SMTP_PASSWORD='${var.red5pro_truetime_studio_webinar_smtp_password}'",
+      "export SMTP_PORT='${var.red5pro_truetime_studio_webinar_smtp_port}'",
+      "export FROM_ADDRESS='${var.red5pro_truetime_studio_webinar_smtp_email_address}'",
+      "export FRONTEND_SERVER='https://${var.https_letsencrypt_certificate_domain_name}/truetime-webinar'",
       ###################################      
       "cd /home/red5pro-installer/",
       "sudo chmod +x /home/red5pro-installer/*.sh",
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",
       "sudo -E /home/red5pro-installer/r5p_install_mysql_local.sh",
       "sudo -E /home/red5pro-installer/r5p_install_terraform_svc.sh",
+      "sudo -E /home/red5pro-installer/r5p_kafka_install.sh",
+      "sudo -E /home/red5pro-installer/r5p_conference_api.sh",
       "sudo -E /home/red5pro-installer/r5p_config_stream_manager.sh",
       "sudo systemctl daemon-reload && sudo systemctl start red5pro",
       "nohup sudo -E /home/red5pro-installer/r5p_ssl_check_install.sh >> /home/red5pro-installer/r5p_ssl_check_install.log &",
@@ -373,9 +430,12 @@ resource "digitalocean_droplet" "red5pro_terraform_service" {
       "export DB_PORT='${local.mysql_port}'",
       "export DB_USER='${local.mysql_user}'",
       "export DB_PASSWORD='${nonsensitive(local.mysql_password)}'",
+      "export KAFKA_HOST='${self.ipv4_address}'",
+      "export R5P_WEBINAR_ENABLE='${var.red5pro_truetime_studio_webinar_enable}'",
       "cd /home/red5pro-installer/",
       "sudo chmod +x /home/red5pro-installer/*.sh",
       "sudo -E /home/red5pro-installer/r5p_install_terraform_svc.sh",
+      "sudo -E /home/red5pro-installer/r5p_kafka_install.sh",
       "sleep 2"
     ]
     connection {
@@ -515,6 +575,8 @@ resource "digitalocean_droplet" "red5pro_origin_node" {
       "export NODE_SOCIALPUSHER_ENABLE='${var.origin_image_red5pro_socialpusher_enable}'",
       "export NODE_SUPPRESSOR_ENABLE='${var.origin_image_red5pro_suppressor_enable}'",
       "export NODE_HLS_ENABLE='${var.origin_image_red5pro_hls_enable}'",
+      "export KAFKA_HOST='${local.node_kafka_host}'",
+      "export R5P_WEBINAR_ENABLE='${var.red5pro_truetime_studio_webinar_enable}'",
       "export NODE_ROUND_TRIP_AUTH_ENABLE='${var.origin_image_red5pro_round_trip_auth_enable}'",
       "export NODE_ROUND_TRIP_AUTH_HOST='${var.origin_image_red5pro_round_trip_auth_host}'",
       "export NODE_ROUND_TRIP_AUTH_PORT='${var.origin_image_red5pro_round_trip_auth_port}'",
@@ -527,6 +589,8 @@ resource "digitalocean_droplet" "red5pro_origin_node" {
       "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME='${var.origin_red5pro_cloudstorage_digitalocean_spaces_name}'",
       "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION='${var.origin_red5pro_cloudstorage_digitalocean_spaces_region}'",
       "export NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE='${var.origin_red5pro_cloudstorage_postprocessor_enable}'",
+      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS='${var.origin_red5pro_cloudstorage_spaces_file_access}'",
+      "export NODE_CLOUDSTORAGE_POSTPROCESSOR_MP4_ENABLE='${var.origin_red5pro_cloudstorage_postprocessor_mp4_enable}'",
       "cd /home/red5pro-installer/",
       "sudo chmod +x /home/red5pro-installer/*.sh",
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",
@@ -585,18 +649,14 @@ resource "digitalocean_droplet" "red5pro_edge_node" {
       "export NODE_SOCIALPUSHER_ENABLE='${var.edge_image_red5pro_socialpusher_enable}'",
       "export NODE_SUPPRESSOR_ENABLE='${var.edge_image_red5pro_suppressor_enable}'",
       "export NODE_HLS_ENABLE='${var.edge_image_red5pro_hls_enable}'",
+      "export KAFKA_HOST='${local.node_kafka_host}'",
+      "export R5P_WEBINAR_ENABLE='${var.red5pro_truetime_studio_webinar_enable}'",
       "export NODE_ROUND_TRIP_AUTH_ENABLE='${var.edge_image_red5pro_round_trip_auth_enable}'",
       "export NODE_ROUND_TRIP_AUTH_HOST='${var.edge_image_red5pro_round_trip_auth_host}'",
       "export NODE_ROUND_TRIP_AUTH_PORT='${var.edge_image_red5pro_round_trip_auth_port}'",
       "export NODE_ROUND_TRIP_AUTH_PROTOCOL='${var.edge_image_red5pro_round_trip_auth_protocol}'",
       "export NODE_ROUND_TRIP_AUTH_ENDPOINT_VALIDATE='${var.edge_image_red5pro_round_trip_auth_endpoint_validate}'",
       "export NODE_ROUND_TRIP_AUTH_ENDPOINT_INVALIDATE='${var.edge_image_red5pro_round_trip_auth_endpoint_invalidate}'",
-      "export NODE_CLOUDSTORAGE_ENABLE='${var.edge_red5pro_cloudstorage_enable}'",
-      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_ACCESS_KEY='${var.edge_red5pro_cloudstorage_digitalocean_spaces_access_key}'",
-      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_SECRET_KEY='${var.edge_red5pro_cloudstorage_digitalocean_spaces_secret_key}'",
-      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME='${var.edge_red5pro_cloudstorage_digitalocean_spaces_name}'",
-      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION='${var.edge_red5pro_cloudstorage_digitalocean_spaces_region}'",
-      "export NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE='${var.edge_red5pro_cloudstorage_postprocessor_enable}'",
       "cd /home/red5pro-installer/",
       "sudo chmod +x /home/red5pro-installer/*.sh",
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",
@@ -655,6 +715,8 @@ resource "digitalocean_droplet" "red5pro_transcoder_node" {
       "export NODE_SOCIALPUSHER_ENABLE='${var.transcoder_image_red5pro_socialpusher_enable}'",
       "export NODE_SUPPRESSOR_ENABLE='${var.transcoder_image_red5pro_suppressor_enable}'",
       "export NODE_HLS_ENABLE='${var.transcoder_image_red5pro_hls_enable}'",
+      "export KAFKA_HOST='${local.node_kafka_host}'",
+      "export R5P_WEBINAR_ENABLE='${var.red5pro_truetime_studio_webinar_enable}'",
       "export NODE_ROUND_TRIP_AUTH_ENABLE='${var.transcoder_image_red5pro_round_trip_auth_enable}'",
       "export NODE_ROUND_TRIP_AUTH_HOST='${var.transcoder_image_red5pro_round_trip_auth_host}'",
       "export NODE_ROUND_TRIP_AUTH_PORT='${var.transcoder_image_red5pro_round_trip_auth_port}'",
@@ -667,6 +729,8 @@ resource "digitalocean_droplet" "red5pro_transcoder_node" {
       "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME='${var.transcoder_red5pro_cloudstorage_digitalocean_spaces_name}'",
       "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION='${var.transcoder_red5pro_cloudstorage_digitalocean_spaces_region}'",
       "export NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE='${var.transcoder_red5pro_cloudstorage_postprocessor_enable}'",
+      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS='${var.transcoder_red5pro_cloudstorage_spaces_file_access}'",
+      "export NODE_CLOUDSTORAGE_POSTPROCESSOR_MP4_ENABLE='${var.transcoder_red5pro_cloudstorage_postprocessor_mp4_enable}'",
       "cd /home/red5pro-installer/",
       "sudo chmod +x /home/red5pro-installer/*.sh",
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",
@@ -725,18 +789,14 @@ resource "digitalocean_droplet" "red5pro_relay_node" {
       "export NODE_SOCIALPUSHER_ENABLE='${var.relay_image_red5pro_socialpusher_enable}'",
       "export NODE_SUPPRESSOR_ENABLE='${var.relay_image_red5pro_suppressor_enable}'",
       "export NODE_HLS_ENABLE='${var.relay_image_red5pro_hls_enable}'",
+      "export KAFKA_HOST='${local.node_kafka_host}'",
+      "export R5P_WEBINAR_ENABLE='${var.red5pro_truetime_studio_webinar_enable}'",
       "export NODE_ROUND_TRIP_AUTH_ENABLE='${var.relay_image_red5pro_round_trip_auth_enable}'",
       "export NODE_ROUND_TRIP_AUTH_HOST='${var.relay_image_red5pro_round_trip_auth_host}'",
       "export NODE_ROUND_TRIP_AUTH_PORT='${var.relay_image_red5pro_round_trip_auth_port}'",
       "export NODE_ROUND_TRIP_AUTH_PROTOCOL='${var.relay_image_red5pro_round_trip_auth_protocol}'",
       "export NODE_ROUND_TRIP_AUTH_ENDPOINT_VALIDATE='${var.relay_image_red5pro_round_trip_auth_endpoint_validate}'",
       "export NODE_ROUND_TRIP_AUTH_ENDPOINT_INVALIDATE='${var.relay_image_red5pro_round_trip_auth_endpoint_invalidate}'",
-      "export NODE_CLOUDSTORAGE_ENABLE='${var.relay_red5pro_cloudstorage_enable}'",
-      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_ACCESS_KEY='${var.relay_red5pro_cloudstorage_digitalocean_spaces_access_key}'",
-      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_SECRET_KEY='${var.relay_red5pro_cloudstorage_digitalocean_spaces_secret_key}'",
-      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME='${var.relay_red5pro_cloudstorage_digitalocean_spaces_name}'",
-      "export NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION='${var.relay_red5pro_cloudstorage_digitalocean_spaces_region}'",
-      "export NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE='${var.relay_red5pro_cloudstorage_postprocessor_enable}'",
       "cd /home/red5pro-installer/",
       "sudo chmod +x /home/red5pro-installer/*.sh",
       "sudo -E /home/red5pro-installer/r5p_install_server_basic.sh",

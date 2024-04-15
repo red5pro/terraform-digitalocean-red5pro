@@ -86,6 +86,7 @@ $ terraform apply
 | <a name="output_database_port"></a> [database\_port](#output\_database\_port) | Database Port |
 | <a name="output_database_user"></a> [database\_user](#output\_database\_user) | Database User |
 | <a name="output_lb_https_url"></a> [lb\_https\_url](#output\_lb\_https\_url) | Load balancer https url |
+| <a name="output_lb_http_url"></a> [lb\_http\_url](#output\_lb\_http\_url) | Load balancer http url |
 | <a name="output_load_balancer_ip_address"></a> [load\_balancer\_ip\_address](#output\_load\_balancer\_ip\_address) | Load balancer IP address |
 | <a name="output_module_output"></a> [module\_output](#output\_module\_output) | n/a |
 | <a name="output_node_edge_image"></a> [node\_edge\_image](#output\_node\_edge\_image) | Image name of the Red5 Pro Node Edge image |

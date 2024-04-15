@@ -120,6 +120,11 @@ variable "firewall_stream_manager_inbound" {
     },
     {
       protocol         = "tcp"
+      port_range       = "9092"
+      source_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "tcp"
       port_range       = "443"
       source_addresses = ["0.0.0.0/0", "::/0"]
     }
@@ -169,6 +174,11 @@ variable "firewall_terraform_service_inbound" {
     {
       protocol         = "tcp"
       port_range       = "8083"
+      source_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "tcp"
+      port_range       = "9092"
       source_addresses = ["0.0.0.0/0", "::/0"]
     }
   ]
@@ -334,26 +344,6 @@ variable "mysql_password" {
   type        = string
   default     = ""
   sensitive = true
-  # validation {
-  #   condition = length(var.mysql_password) >= 8
-  #   error_message = "Password must have at least 8 characters."
-  # }
-  # validation {
-  #   condition = can(regex("[A-Z]", var.mysql_password))
-  #   error_message = "Password must contain at least one uppercase letter."
-  # }
-  # validation {
-  #   condition = can(regex("[a-z]", var.mysql_password))
-  #   error_message = "Password must contain at least one lowercase letter."
-  # }
-  # validation {
-  #   condition = can(regex("[^a-zA-Z0-9]", var.mysql_password))
-  #   error_message = "Password must contain at least one character that isn't a letter or a digit."
-  # }
-  # validation {
-  #   condition = can(regex("[0-9]", var.mysql_password))
-  #   error_message = "Password must contain at least one digit."
-  # }
 }
 variable "mysql_port" {
   description = "MySQL port if mysql_database_create = false"
@@ -399,9 +389,17 @@ variable "stream_manager_api_key" {
   description = "API Key for Red5Pro Stream Manager"
   type        = string
   default     = ""
-
 }
-
+variable "create_reserved_ip_stream_manager" {
+  description = "Create Reserved IP for Stream Manager"
+  type        = bool
+  default     = true
+}
+variable "existing_reserved_ip_address_stream_manager" {
+  description = "Existing reserved IP address for Stream Manager"
+  type        = string
+  default     = ""
+}
 variable "red5pro_cluster_key" {
   description = "Red5Pro Cluster Key"
   type        = string
@@ -413,6 +411,16 @@ variable "single_droplet_size" {
   description = "Red5 Pro Single server droplet size"
   type        = string
   default     = "c-4"
+}
+variable "create_reserved_ip_single_server" {
+  description = "Create the reserved IP for Single server"
+  type        = bool
+  default     = true
+}
+variable "existing_reserved_ip_address_single_server" {
+  description = "Use already created reserved IP for Single server"
+  type        = string
+  default     = ""
 }
 variable "red5pro_license_key" {
   description = "Red5 Pro license key (https://www.red5pro.com/docs/installation/installation/license-key/)"
@@ -893,6 +901,16 @@ variable "red5pro_cloudstorage_postprocessor_enable" {
   type        = bool
   default     = false
 }
+variable "red5pro_cloudstorage_spaces_file_access" {
+  description = "Red5 Pro server cloud storage files public access"
+  type        = bool
+  default     = false
+}
+variable "red5pro_cloudstorage_postprocessor_mp4_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor to convert flv to MP4 (https://www.red5.net/docs/protocols/converting/overview/)"
+  type        = bool
+  default     = false
+}
 variable "origin_red5pro_cloudstorage_enable" {
   description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
   type        = bool
@@ -923,37 +941,18 @@ variable "origin_red5pro_cloudstorage_postprocessor_enable" {
   type        = bool
   default     = false
 }
+variable "origin_red5pro_cloudstorage_spaces_file_access" {
+  description = "Red5 Pro server cloud storage files public access"
+  type        = bool
+  default     = false
+}
+variable "origin_red5pro_cloudstorage_postprocessor_mp4_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor to convert flv to MP4 (https://www.red5.net/docs/protocols/converting/overview/)"
+  type        = bool
+  default     = false
+}
 
-variable "edge_red5pro_cloudstorage_enable" {
-  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
-  type        = bool
-  default     = false
-}
-variable "edge_red5pro_cloudstorage_digitalocean_spaces_access_key" {
-  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
-  type        = string
-  default     = ""
-}
-variable "edge_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
-  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
-  type        = string
-  default     = ""
-}
-variable "edge_red5pro_cloudstorage_digitalocean_spaces_name" {
-  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
-  type        = string
-  default     = ""
-}
-variable "edge_red5pro_cloudstorage_digitalocean_spaces_region" {
-  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
-  type        = string
-  default     = ""
-}
-variable "edge_red5pro_cloudstorage_postprocessor_enable" {
-  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
-  type        = bool
-  default     = false
-}
+
 variable "transcoder_red5pro_cloudstorage_enable" {
   description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
   type        = bool
@@ -984,37 +983,17 @@ variable "transcoder_red5pro_cloudstorage_postprocessor_enable" {
   type        = bool
   default     = false
 }
+variable "transcoder_red5pro_cloudstorage_spaces_file_access" {
+  description = "Red5 Pro server cloud storage files public access"
+  type        = bool
+  default     = false
+}
+variable "transcoder_red5pro_cloudstorage_postprocessor_mp4_enable" {
+  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor to convert flv to MP4 (https://www.red5.net/docs/protocols/converting/overview/)"
+  type        = bool
+  default     = false
+}
 
-variable "relay_red5pro_cloudstorage_enable" {
-  description = "Red5 Pro server cloud storage enable/disable (https://www.red5.net/docs/special/cloudstorage-plugin/digital-ocean-storage/)"
-  type        = bool
-  default     = false
-}
-variable "relay_red5pro_cloudstorage_digitalocean_spaces_access_key" {
-  description = "Red5 Pro server cloud storage - Digital Ocean space access key (DO Spaces)"
-  type        = string
-  default     = ""
-}
-variable "relay_red5pro_cloudstorage_digitalocean_spaces_secret_key" {
-  description = "Red5 Pro server cloud storage - Digital Ocean space secret key (DO Spaces)"
-  type        = string
-  default     = ""
-}
-variable "relay_red5pro_cloudstorage_digitalocean_spaces_name" {
-  description = "Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)"
-  type        = string
-  default     = ""
-}
-variable "relay_red5pro_cloudstorage_digitalocean_spaces_region" {
-  description = "Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces)"
-  type        = string
-  default     = ""
-}
-variable "relay_red5pro_cloudstorage_postprocessor_enable" {
-  description = "Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)"
-  type        = bool
-  default     = false
-}
 variable "ubuntu_image_version" {
   type = map(string)
   default = {
@@ -1031,4 +1010,36 @@ variable "ubuntu_version" {
     condition = var.ubuntu_version == "18.04" || var.ubuntu_version == "20.04" || var.ubuntu_version == "22.04"
     error_message = "Please specify the correct ubuntu version, it can either be 18.04, 20.04 or 22.04"
   }
+}
+
+# Red5 Pro TrueTime Webinar Deployments
+variable "red5pro_truetime_studio_webinar_enable" {
+  description = "Enable Red5Pro Webinar studio deployments (https://www.red5.net/truetime/studio-for-webinars/)"
+  type        = bool
+  default     = false
+}
+variable "red5pro_truetime_studio_webinar_smtp_host" {
+  description = "The SMTP host address"
+  type        = string
+  default     = ""
+}
+variable "red5pro_truetime_studio_webinar_smtp_port" {
+  description = "The SMTP port"
+  type        = string
+  default     = ""
+}
+variable "red5pro_truetime_studio_webinar_smtp_username" {
+  description = "The SMTP username"
+  type        = string
+  default     = ""
+}
+variable "red5pro_truetime_studio_webinar_smtp_password" {
+  description = "The SMTP password"
+  type        = string
+  default     = ""
+}
+variable "red5pro_truetime_studio_webinar_smtp_email_address" {
+  description = "The Email address used for sending the email through SMTP server"
+  type        = string
+  default     = ""
 }

@@ -51,14 +51,16 @@ module "red5pro" {
   mysql_port                  = "3306"                                                       # Port for locally install databse
 
   # Stream Manager Configuration
-  stream_manager_droplet_size = "c-2"                                                        # Stream Manager droplet size
+  create_reserved_ip_stream_manager = true                                                   # True - Create a reserved IP for Stream Manager, False - Use existing reserved IP for stream manager
+  existing_reserved_ip_address_stream_manager = "1.2.3.4"                                    # Existing reserved IP for stream manager
+  stream_manager_droplet_size = "c-4"                                                        # Stream Manager droplet size
   stream_manager_api_key      = "examplekey"                                                 # Stream Manager api key
 
   # Terraform Service configuration
   terraform_service_instance_create = true                                                   # true - Create a dedicate terraform service droplet, false - install terraform service locally on the stream manager
   terraform_service_api_key         = "examplekey"                                           # Terraform service api key
   terraform_service_parallelism     = "20"                                                   # Terraform service parallelism
-  terraform_service_droplet_size    = "c-2"                                                  # Terraform service droplet size
+  terraform_service_droplet_size    = "c-4"                                                  # Terraform service droplet size
 
   # Red5 Pro general configuration
   red5pro_license_key         = "1111-2222-3333-4444"                                        # Red5 Pro license key (https://account.red5pro.com/login)
@@ -93,6 +95,8 @@ module "red5pro" {
   origin_red5pro_cloudstorage_digitalocean_spaces_name           = "bucket-example-name"     # Red5 Pro server cloud storage - Digital Ocean space name (DO Spaces)
   origin_red5pro_cloudstorage_digitalocean_spaces_region         = "nyc1"                    # Red5 Pro server cloud storage - Digital Ocean space region (DO Spaces) (Valid locations are: ams3, fra1, nyc1, nyc3, sfo3, sgp1)
   origin_red5pro_cloudstorage_postprocessor_enable               = false                     # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor (https://www.red5.net/docs/special/cloudstorage-plugin/server-configuration/)
+  origin_red5pro_cloudstorage_spaces_file_access                 = true                      # true - Cloud storage files private access only   false - Cloud storage files public access
+  origin_red5pro_cloudstorage_postprocessor_mp4_enable           = true                      # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor to convert flv to MP4 (https://www.red5.net/docs/protocols/converting/overview/)
 
 # Red5 Pro autoscaling Node group - (Optional)
   node_group_create                    = true                       # Linux or Mac OS only. true - create new Stream Manager Node group, false - not create new Stream Manager Node group
@@ -113,6 +117,14 @@ module "red5pro" {
   node_group_relays                    = 0                          # Number of Relays
   node_group_relays_droplet_type       = "c-2"                      # Relays DO droplet 
   node_group_relays_capacity           = 20                         # Connections capacity for Relays
+
+# Red5 Pro TrueTime Webinar Deployments - (Optional)                https://www.red5.net/truetime/studio-for-webinars/
+  red5pro_truetime_studio_webinar_enable                         = false                     # True - Enable wantch party configuration (https://www.red5.net/truetime/studio-for-webinars/) 
+  red5pro_truetime_studio_webinar_smtp_host                      = "smtp.example.com"        # SMTP host address
+  red5pro_truetime_studio_webinar_smtp_port                      = "587"                     # SMTP port
+  red5pro_truetime_studio_webinar_smtp_username                  = ""                        # SMTP Username
+  red5pro_truetime_studio_webinar_smtp_password                  = ""                        # SMTP Password
+  red5pro_truetime_studio_webinar_smtp_email_address             = "example@example.com"     # EMail address for sending email using SMTP server
 }
 
 output "module_output" {
