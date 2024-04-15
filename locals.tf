@@ -18,8 +18,8 @@ locals {
   terraform_service_ip                 = local.autoscaling ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : local.cluster && var.terraform_service_instance_create ? digitalocean_droplet.red5pro_terraform_service[0].ipv4_address : "localhost"
   terraform_service_local_enable       = local.autoscaling ? false : local.cluster && var.terraform_service_instance_create ? false : true
   dedicated_terraform_service_create   = local.autoscaling ? true : local.cluster && var.terraform_service_instance_create ? true : false
-  stream_manager_ip                    = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : local.cluster ? digitalocean_droplet.red5pro_sm[0].ipv4_address : null
-  single_server_ip                     = local.single ? digitalocean_droplet.red5pro_single[0].ipv4_address : null
+  stream_manager_ip                    = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : local.cluster ? var.create_reserved_ip_stream_manager ? digitalocean_reserved_ip.red5pro_sm_reserved_ip[0].ip_address : data.digitalocean_reserved_ip.existing_sm_reserved_ip[0].ip_address  : null
+  single_server_ip                     = local.single ? var.create_reserved_ip_single_server ? digitalocean_reserved_ip.red5pro_single_reserved_ip[0].ip_address : data.digitalocean_reserved_ip.existing_single_server_reserved_ip[0].ip_address : null
   lb_certificate_name                  = local.autoscaling && var.lb_ssl_create ? digitalocean_certificate.new_lb_cert[0].name : null
   lb_ip                                = local.autoscaling ? digitalocean_loadbalancer.red5pro_lb[0].ip : null
   stream_managers_amount               = local.autoscaling ? var.stream_managers_amount : local.cluster ? 1 : 0

@@ -48,7 +48,9 @@ module "red5pro" {
 
   # Single Red5 Pro server Droplet configuration
   single_droplet_size                        = "c-2"                                         # Droplet size for Red5 Pro server in Digital Ocean
-
+  create_reserved_ip_single_server           = true                                          # True - Create the reserved IP for Single server, False - Use existing reserved IP for Single server
+  existing_reserved_ip_address_single_server = "1.2.3.4"                                     # Already created reserved IP address for Single server
+  
   # Red5Pro server configuration
   red5pro_license_key                           = "1111-2222-3333-4444"                      # Red5 Pro license key (https://account.red5pro.com/login)
   red5pro_api_enable                            = true                                       # true - enable Red5 Pro server API, false - disable Red5 Pro server API (https://www.red5pro.com/docs/development/api/overview/)

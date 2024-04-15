@@ -389,9 +389,17 @@ variable "stream_manager_api_key" {
   description = "API Key for Red5Pro Stream Manager"
   type        = string
   default     = ""
-
 }
-
+variable "create_reserved_ip_stream_manager" {
+  description = "Create Reserved IP for Stream Manager"
+  type        = bool
+  default     = true
+}
+variable "existing_reserved_ip_address_stream_manager" {
+  description = "Existing reserved IP address for Stream Manager"
+  type        = string
+  default     = ""
+}
 variable "red5pro_cluster_key" {
   description = "Red5Pro Cluster Key"
   type        = string
@@ -403,6 +411,16 @@ variable "single_droplet_size" {
   description = "Red5 Pro Single server droplet size"
   type        = string
   default     = "c-4"
+}
+variable "create_reserved_ip_single_server" {
+  description = "Create the reserved IP for Single server"
+  type        = bool
+  default     = true
+}
+variable "existing_reserved_ip_address_single_server" {
+  description = "Use already created reserved IP for Single server"
+  type        = string
+  default     = ""
 }
 variable "red5pro_license_key" {
   description = "Red5 Pro license key (https://www.red5pro.com/docs/installation/installation/license-key/)"

@@ -93,6 +93,28 @@ data "digitalocean_vpc" "selected" {
 ################################################################################
 # Red5 Pro Single server (DO Droplet)
 ################################################################################
+resource "digitalocean_reserved_ip" "red5pro_single_reserved_ip" {
+  count    = local.single && var.create_reserved_ip_single_server ? 1 : 0
+  region   = var.digital_ocean_region
+}
+
+data "digitalocean_reserved_ip" "existing_single_server_reserved_ip" {
+  count      = local.autoscaling || local.cluster ? 0 : local.single && var.create_reserved_ip_single_server ? 0 : 1
+  ip_address = var.existing_reserved_ip_address_single_server
+  lifecycle {
+    postcondition {
+      condition     = self.urn != null && self.region == var.digital_ocean_region
+      error_message = "Reserved IP address ${var.existing_reserved_ip_address_single_server} does not exist in region ${var.digital_ocean_region}."
+    }
+  }
+}
+
+resource "digitalocean_reserved_ip_assignment" "single_server_ip_association" {
+  count      = local.single ? 1 : 0
+  ip_address = local.single_server_ip
+  droplet_id =  digitalocean_droplet.red5pro_single[0].id
+}
+
 resource "digitalocean_droplet" "red5pro_single" {
   count    = local.single ? 1 : 0
   name     = "${var.name}-red5-single"
@@ -104,7 +126,7 @@ resource "digitalocean_droplet" "red5pro_single" {
   tags     = [digitalocean_tag.red5pro_tag.id]
 
   connection {
-    host        = digitalocean_droplet.red5pro_single[0].ipv4_address
+    host        = self.ipv4_address
     type        = "ssh"
     user        = "root"
     private_key = local.ssh_private_key
@@ -161,7 +183,7 @@ resource "digitalocean_droplet" "red5pro_single" {
 
     ]
     connection {
-      host        = digitalocean_droplet.red5pro_single[0].ipv4_address
+      host        = self.ipv4_address
       type        = "ssh"
       user        = "root"
       private_key = local.ssh_private_key
@@ -225,6 +247,28 @@ resource "digitalocean_firewall" "red5pro_sm_fw" {
 ################################################################################
 # Stream manager - (DO droplet)
 ################################################################################
+resource "digitalocean_reserved_ip" "red5pro_sm_reserved_ip" {
+  count    = local.cluster && var.create_reserved_ip_stream_manager ? 1 : 0
+  region   = var.digital_ocean_region
+}
+
+data "digitalocean_reserved_ip" "existing_sm_reserved_ip" {
+  count      = local.single || local.autoscaling ? 0 : local.cluster && var.create_reserved_ip_stream_manager ? 0 : 1
+  ip_address = var.existing_reserved_ip_address_stream_manager
+  lifecycle {
+    postcondition {
+      condition     = self.urn != null && self.region == var.digital_ocean_region
+      error_message = "Reserved IP address ${var.existing_reserved_ip_address_stream_manager} does not exist in region ${var.digital_ocean_region}."
+    }
+  }
+}
+
+resource "digitalocean_reserved_ip_assignment" "sm_ip_association" {
+  count      = local.cluster ? 1 : 0
+  ip_address = local.stream_manager_ip
+  droplet_id =  digitalocean_droplet.red5pro_sm[0].id
+}
+
 # Stream Manager droplet
 resource "digitalocean_droplet" "red5pro_sm" {
   count    = local.stream_managers_amount

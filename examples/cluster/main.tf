@@ -51,6 +51,8 @@ module "red5pro" {
   mysql_port                  = "3306"                                                       # Port for locally install databse
 
   # Stream Manager Configuration
+  create_reserved_ip_stream_manager = true                                                   # True - Create a reserved IP for Stream Manager, False - Use existing reserved IP for stream manager
+  existing_reserved_ip_address_stream_manager = "1.2.3.4"                                    # Existing reserved IP for stream manager
   stream_manager_droplet_size = "c-4"                                                        # Stream Manager droplet size
   stream_manager_api_key      = "examplekey"                                                 # Stream Manager api key
 

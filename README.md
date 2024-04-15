@@ -93,7 +93,9 @@ module "red5pro" {
 
   # Single Red5 Pro server Droplet configuration
   single_droplet_size                        = "c-2"                                         # Droplet size for Red5 Pro server in Digital Ocean
-
+  create_reserved_ip_single_server           = true                                          # True - Create the reserved IP for Single server, False - Use existing reserved IP for Single server
+  existing_reserved_ip_address_single_server = "1.2.3.4"                                     # Already created reserved IP address for Single server
+  
   # Red5Pro server configuration
   red5pro_license_key                           = "1111-2222-3333-4444"                      # Red5 Pro license key (https://account.red5pro.com/login)
   red5pro_api_enable                            = true                                       # true - enable Red5 Pro server API, false - disable Red5 Pro server API (https://www.red5pro.com/docs/development/api/overview/)
@@ -185,6 +187,8 @@ module "red5pro" {
   mysql_port                  = "3306"                                                       # Port for locally install databse
 
   # Stream Manager Configuration
+  create_reserved_ip_stream_manager = true                                                   # True - Create a reserved IP for Stream Manager, False - Use existing reserved IP for stream manager
+  existing_reserved_ip_address_stream_manager = "1.2.3.4"                                    # Existing reserved IP for stream manager
   stream_manager_droplet_size = "c-4"                                                        # Stream Manager droplet size
   stream_manager_api_key      = "examplekey"                                                 # Stream Manager api key
 
@@ -230,7 +234,7 @@ module "red5pro" {
   origin_red5pro_cloudstorage_spaces_file_access                 = true                      # true - Cloud storage files private access only   false - Cloud storage files public access
   origin_red5pro_cloudstorage_postprocessor_mp4_enable           = true                      # Red5 Pro server cloud storage - enable/disable Red5 Pro server postprocessor to convert flv to MP4 (https://www.red5.net/docs/protocols/converting/overview/)
  
-# Red5 Pro autoscaling Node group - (Optional)
+  # Red5 Pro autoscaling Node group - (Optional)
   node_group_create                    = true                       # Linux or Mac OS only. true - create new Stream Manager Node group, false - not create new Stream Manager Node group
   node_group_name                      = "example-node-group"       # Node group name
   # Origin node configuration

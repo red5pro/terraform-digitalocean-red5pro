@@ -79,6 +79,11 @@ output "lb_https_url" {
   value = module.red5pro.load_balancer_https_url
 }
 
+output "lb_http_url" {
+  description = "Load balancer http url"
+  value = module.red5pro.load_balancer_http_url
+}
+
 output "terraform_service_ip" {
   description = "Terraform Service Host"
   value = module.red5pro.terraform_service_ip
