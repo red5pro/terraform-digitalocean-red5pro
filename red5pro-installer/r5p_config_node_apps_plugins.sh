@@ -217,9 +217,10 @@ config_node_apps_plugins(){
         do_spaces_bucket_files_access="# do.files.private=.*"
         do_spaces_bucket_files_access_new="do.files.private=${NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_FILE_ACCESS}"
 
+        stream_dir="streams.dir=.*"
+        stream_dir_new="streams.dir=$RED5_HOME/webapps/"
 
-
-        sed -i -e "s|$do_service|$do_service_new|" -e "s|$max_transcode_min|$max_transcode_min_new|" -e "s|$do_spaces_access_key|$do_spaces_access_key_new|" -e "s|$do_spaces_secret_key|$do_spaces_secret_key_new|" -e "s|$do_spaces_bucket_name|$do_spaces_bucket_name_new|" -e "s|$do_spaces_region|$do_spaces_region_new|" -e "s|$do_spaces_bucket_files_access|$do_spaces_bucket_files_access_new|" "$RED5_HOME/conf/cloudstorage-plugin.properties"
+        sed -i -e "s|$do_service|$do_service_new|" -e "s|$stream_dir|$stream_dir_new|" -e "s|$max_transcode_min|$max_transcode_min_new|" -e "s|$do_spaces_access_key|$do_spaces_access_key_new|" -e "s|$do_spaces_secret_key|$do_spaces_secret_key_new|" -e "s|$do_spaces_bucket_name|$do_spaces_bucket_name_new|" -e "s|$do_spaces_region|$do_spaces_region_new|" -e "s|$do_spaces_bucket_files_access|$do_spaces_bucket_files_access_new|" "$RED5_HOME/conf/cloudstorage-plugin.properties"
 
         if [[ "$NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE" == "true" ]]; then
 
