@@ -20,7 +20,7 @@ module "red5pro" {
   source                     = "../../"
   digital_ocean_region       = "nyc1"                                                        # Digital Ocean region where resources will create
   ubuntu_version             = "22.04"                                                       # The version of ubuntu which is used to create droplet, it can either be 20.04 or 22.04
-  type                       = "cluster"                                                     # Deployment type: single, cluster, autoscaling
+  type                       = "cluster"                                                     # Deployment type: standalone, cluster, autoscale
   name                       = "red5pro-cluster"                                             # Name to be used on all the resources as identifier
   digital_ocean_access_token = "dop_v1_example"                                              # Digital Ocean access token (https://cloud.digitalocean.com/account/api/tokens)
   
@@ -46,6 +46,11 @@ module "red5pro" {
   stream_manager_droplet_size                 = "c-4"                                        # Stream Manager droplet size
   stream_manager_auth_user                    = "example_user"                               # Stream Manager 2.0 authentication user name
   stream_manager_auth_password                = "example_password"                           # Stream Manager 2.0 authentication password
+  stream_manager_proxy_user       = "example_proxy_user"                                     # Stream Manager 2.0 proxy user name
+  stream_manager_proxy_password   = "example_proxy_password"                                 # Stream Manager 2.0 proxy password
+  stream_manager_spatial_user     = "example_spatial_user"                                   # Stream Manager 2.0 spatial user name
+  stream_manager_spatial_password = "example_spatial_password"                               # Stream Manager 2.0 spatial password
+  stream_manager_version          = "latest"                                                 # Stream Manager 2.0 docker images version (latest, 14.1.0, 14.1.1, etc.) - https://hub.docker.com/r/red5pro/as-admin/tags
 
   # Terraform Service configuration
   kafka_standalone_instance_create = false                                                   # true - Create a dedicate terraform service droplet, false - install terraform service locally on the stream manager                                                   # Terraform service parallelism
@@ -112,14 +117,17 @@ module "red5pro" {
   node_group_origins_max               = 20                        # Number of maximum Origins
   node_group_origins_droplet_size      = "c-2"                     # Origins Instance Type
   node_group_origins_volume_size       = 50                        # Volume size in GB for Origins
+  node_group_origins_connection_limit  = 20                        # Maximum number of publishers to the origin server
   node_group_edges_min                 = 1                         # Number of minimum Edges
   node_group_edges_max                 = 40                        # Number of maximum Edges
   node_group_edges_droplet_size        = "c-2"                     # Edges Instance Type
   node_group_edges_volume_size         = 50                        # Volume size in GB for Edges
+  node_group_edges_connection_limit    = 200                       # Maximum number of subscribers to the edge server
   node_group_transcoders_min           = 0                         # Number of minimum Transcoders
   node_group_transcoders_max           = 20                        # Number of maximum Transcoders
   node_group_transcoders_droplet_size  = "c-2"                     # Transcoders Instance Type
   node_group_transcoders_volume_size   = 50                        # Volume size in GB for Transcoders
+  node_group_transcoders_connection_limit = 20                     # Maximum number of publishers to the transcoder server
   node_group_relays_min                = 0                         # Number of minimum Relays
   node_group_relays_max                = 20                        # Number of maximum Relays
   node_group_relays_droplet_size       = "c-2"                     # Relays Instance Type
