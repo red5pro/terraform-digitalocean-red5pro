@@ -1,20 +1,14 @@
-## Red5 Pro Stream Manager cluster deployment (cluster) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/main/example/clustered)
+## Standalone Red5 Pro server deployment (standalone) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/main/example/standalone)
 
 - VPC
 - Public subnet
-- Firewall for Stream Manager 2.0
-- Firewall for Kafka
-- Firewall for Red5 Pro (SM2.0) Autoscaling nodes
+- Firewall for Standalone Red5 Pro server
 - SSH key pair (use existing or create a new one)
-- Standalone Kafka instance (optional).
-- Stream Manager 2.0 instance. Optionally include a Kafka server on the same instance.
-- SSL certificate for Stream Manager 2.0 instance. Options:
-  - `none` - Stream Manager 2.0 without HTTPS and SSL certificate. Only HTTP on port `80`
-  - `letsencrypt` - Stream Manager 2.0 with HTTPS and SSL certificate obtained by Let's Encrypt. HTTP on port `80`, HTTPS on port `443`
-  - `imported` - Stream Manager 2.0 with HTTPS and imported SSL certificate. HTTP on port `80`, HTTPS on port `443`
-- Red5 Pro (SM2.0) node instance image (origins, edges, transcoders, relays)
-- Red5 Pro (SM2.0) Autoscaling node group (origins, edges, transcoders, relays)
-
+- Standalone Red5 Pro server instance
+- SSL certificate for Standalone Red5 Pro server instance. Options:
+  - `none` - Red5 Pro server without HTTPS and SSL certificate. Only HTTP on port `5080`
+  - `letsencrypt` - Red5 Pro server with HTTPS and SSL certificate obtained by Let's Encrypt. HTTP on port `5080`, HTTPS on port `443`
+  - `imported` - Red5 Pro server with HTTPS and imported SSL certificate. HTTP on port `5080`, HTTPS on port `443`
 
 ## Preparation
 
@@ -80,11 +74,11 @@ $ terraform apply
 
 | Name | Description |
 |------|-------------|
+| <a name="output_manual_dns_record"></a> [manual\_dns\_record](#output\_manual\_dns\_record) | Manual DNS record |
 | <a name="output_module_output"></a> [module\_output](#output\_module\_output) | n/a |
-| <a name="output_node_image_name"></a> [node\_image\_name](#output\_node\_image\_name) | Image name of the Red5 Pro Node Origin image |
-| <a name="output_red5pro_server_http_url"></a> [red5pro\_server\_http\_url](#output\_red5pro\_server\_http\_url) | Red5 Pro Server HTTP URL |
-| <a name="output_red5pro_server_https_url"></a> [red5pro\_server\_https\_url](#output\_red5pro\_server\_https\_url) | Red5 Pro Server HTTPS URL |
 | <a name="output_ssh_key_name"></a> [ssh\_key\_name](#output\_ssh\_key\_name) | SSH key name |
 | <a name="output_ssh_private_key_path"></a> [ssh\_private\_key\_path](#output\_ssh\_private\_key\_path) | SSH private key path |
-| <a name="output_stream_manager_ip"></a> [stream\_manager\_ip](#output\_stream\_manager\_ip) | Red5 Pro Server IP |
+| <a name="output_standalone_red5pro_server_http_url"></a> [standalone\_red5pro\_server\_http\_url](#output\_standalone\_red5pro\_server\_http\_url) | Red5 Pro Server HTTP URL |
+| <a name="output_standalone_red5pro_server_https_url"></a> [standalone\_red5pro\_server\_https\_url](#output\_standalone\_red5pro\_server\_https\_url) | Red5 Pro Server HTTPS URL |
+| <a name="output_standalone_red5pro_server_ip"></a> [standalone\_red5pro\_server\_ip](#output\_standalone\_red5pro\_server\_ip) | Red5 Pro Server IP |
 | <a name="output_vpc_name"></a> [vpc\_name](#output\_vpc\_name) | VPC Name |

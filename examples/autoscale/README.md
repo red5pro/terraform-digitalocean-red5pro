@@ -1,17 +1,20 @@
-## Red5 Pro Stream Manager cluster with Load Balancer Stream Managers (autoscaling) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/main/example/autoscale)
+## Red5 Pro Stream Manager cluster with Load Balancer Stream Managers (autoscale) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/main/example/autoscale)
 
-* **VPC** - This Terrform module can either create a new or use your existing VPC. If you wish to create a new VPC, set `vpc_create` to `true`, and the script will ignore the other VPC configurations. To use your existing VPC, set `vpc_create` to `false` and include your existing vpc name.
-* **Firewall** - This Terrform module create a new Firewall in Digital Ocean.
-* **Droplet Size** - Select the appropriate droplet size based on the usecase from Digital Ocean.
-* **Load Balancer** - Digital Ocean load balancer for Stream Managers will be created automatically
-* **SSL Certificates** - User can install Let's encrypt SSL certificates or use Red5Pro server without SSL certificate (HTTP only).
-* **MySQL Database** - Users have flexibility to create a MySQL databse server in Digital Ocean or install it locally on the Stream Manager
-* **Terraform Server** - Uesrs can choose to create a dedicated droplet for Terraform Server or install it locally on the Stream Manager
-* **Stream Manager** - Droplet will be created automatically for Stream Manager
-* **Origin Node Image** - To create Digital Ocean(DO) custom image for Orgin Node type for Stream Manager node group
-* **Edge Node Image** - To create Digital Ocean(DO) custom image for Edge Node type for Stream Manager node group (optional)
-* **Transcoder Node Image** - To create Digital Ocean(DO) custom image for Transcoder Node type for Stream Manager node group (optional)
-* **Relay Node Image** - To create Digital Ocean(DO) custom image for Relay Node type for Stream Manager node group (optional)
+- VPC
+- Public subnet
+- Firewall for Stream Manager 2.0
+- Firewall for Kafka
+- Firewall for Red5 Pro (SM2.0) Autoscaling nodes
+- SSH key pair (use existing or create a new one)
+- Standalone Kafka instance
+- Stream Manager 2.0 instance image
+- Instance poll for Stream Manager 2.0 instances
+- Load Balancer for Stream Manager 2.0 instances.
+- SSL certificate for Application Load Balancer. Options:
+  - Create Load Balancer with SSL
+  - Create Load Balancer without SSL
+- Red5 Pro (SM2.0) node instance image (origins, edges, transcoders, relays)
+- Red5 Pro (SM2.0) Autoscaling node group (origins, edges, transcoders, relays)
 
 ## Preparation
 
@@ -34,18 +37,15 @@
 * Install **Digital Ocean CLI** https://docs.digitalocean.com/reference/doctl/how-to/install/
 * Install **jq** Linux or Mac OS only - `apt install jq` or `brew install jq` (It is using in bash scripts to create/delete Stream Manager node group using API)
 * Download Red5 Pro server build: (Example: red5pro-server-0.0.0.b0-release.zip) https://account.red5pro.com/downloads
-* Download Red5 Pro Terraform controller for Digital Ocean: (Example: terraform-cloud-controller-0.0.0.jar) https://account.red5pro.com/downloads
-* Download Red5 Pro Terraform Service : (Example: terraform-service-0.0.0.zip) https://account.red5pro.com/downloads
 * Get Red5 Pro License key: (Example: 1111-2222-3333-4444) https://account.red5pro.com
 * Get Digital Ocean API key or use existing (To access Digital Ocean Cloud) 
-* Copy Red5 Pro server build, Terraform service and Terraform controller to the root folder of your project
+  * Follow the documentation for generating API keys - https://docs.digitalocean.com/reference/api/create-personal-access-token/
+* Copy Red5 Pro server build to the root folder of your project
 
 Example:  
 
 ```bash
 cp ~/Downloads/red5pro-server-0.0.0.b0-release.zip ./
-cp ~/Downloads/terraform-cloud-controller-0.0.0.jar ./
-cp ~/Downloads/terraform-service-0.0.0.zip ./
 ```
 
 ## Usage
@@ -60,8 +60,8 @@ $ terraform apply
 
 ## Notes
 
-* To activate HTTPS/SSL you need to add DNS A record for Elastic IP of Red5 Pro server
-* Note that this example may create resources which can cost money. Run `terraform destroy` when you don't need these resources.
+> - WebRTC broadcast does not work in WEB browsers without an HTTPS (SSL) certificate.
+> - To activate HTTPS/SSL, you need to add a DNS A record for the public IP address of your Red5 Pro server or Stream Manager 2.0.
 
 
 ## Requirements
@@ -81,22 +81,10 @@ $ terraform apply
 
 | Name | Description |
 |------|-------------|
-| <a name="output_database_host"></a> [database\_host](#output\_database\_host) | MySQL database host |
-| <a name="output_database_password"></a> [database\_password](#output\_database\_password) | Database Password |
-| <a name="output_database_port"></a> [database\_port](#output\_database\_port) | Database Port |
-| <a name="output_database_user"></a> [database\_user](#output\_database\_user) | Database User |
-| <a name="output_lb_https_url"></a> [lb\_https\_url](#output\_lb\_https\_url) | Load balancer https url |
-| <a name="output_lb_http_url"></a> [lb\_http\_url](#output\_lb\_http\_url) | Load balancer http url |
-| <a name="output_load_balancer_ip_address"></a> [load\_balancer\_ip\_address](#output\_load\_balancer\_ip\_address) | Load balancer IP address |
+| <a name="output_load_balancer_http_url"></a> [load\_balancer\_http\_url](#output\_load\_balancer\_http\_url) | Red5 Pro Server HTTP URL |
+| <a name="output_load_balancer_https_url"></a> [load\_balancer\_https\_url](#output\_load\_balancer\_https\_url) | Red5 Pro Server HTTPS URL |
 | <a name="output_module_output"></a> [module\_output](#output\_module\_output) | n/a |
-| <a name="output_node_edge_image"></a> [node\_edge\_image](#output\_node\_edge\_image) | Image name of the Red5 Pro Node Edge image |
-| <a name="output_node_origin_image"></a> [node\_origin\_image](#output\_node\_origin\_image) | Image name of the Red5 Pro Node Origin image |
-| <a name="output_node_relay_image"></a> [node\_relay\_image](#output\_node\_relay\_image) | Image name of the Red5 Pro Node Relay image |
-| <a name="output_node_transcoder_image"></a> [node\_transcoder\_image](#output\_node\_transcoder\_image) | Image name of the Red5 Pro Node Transcoder image |
-| <a name="output_red5pro_server_http_url"></a> [red5pro\_server\_http\_url](#output\_red5pro\_server\_http\_url) | Red5 Pro Server HTTP URL |
-| <a name="output_red5pro_server_https_url"></a> [red5pro\_server\_https\_url](#output\_red5pro\_server\_https\_url) | Red5 Pro Server HTTPS URL |
+| <a name="output_node_image_name"></a> [node\_image\_name](#output\_node\_image\_name) | Image name of the Red5 Pro Node Origin image |
 | <a name="output_ssh_key_name"></a> [ssh\_key\_name](#output\_ssh\_key\_name) | SSH key name |
 | <a name="output_ssh_private_key_path"></a> [ssh\_private\_key\_path](#output\_ssh\_private\_key\_path) | SSH private key path |
-| <a name="output_stream_manager_ip"></a> [stream\_manager\_ip](#output\_stream\_manager\_ip) | Red5 Pro Server IP |
-| <a name="output_terraform_service_ip"></a> [terraform\_service\_ip](#output\_terraform\_service\_ip) | Terraform Service Host |
 | <a name="output_vpc_name"></a> [vpc\_name](#output\_vpc\_name) | VPC Name |

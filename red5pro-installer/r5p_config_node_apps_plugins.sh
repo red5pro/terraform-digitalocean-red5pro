@@ -21,17 +21,7 @@
 # NODE_ROUND_TRIP_AUTH_ENDPOINT_VALIDATE="/validateCredentials"
 # NODE_ROUND_TRIP_AUTH_ENDPOINT_INVALIDATE="/invalidateCredentials"
 
-# NODE_CLOUDSTORAGE_ENABLE=true
-# NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_ACCESS_KEY=
-# NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_SECRET_KEY=
-# NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_BUCKET_NAME=
-# NODE_CLOUDSTORAGE_DIGITALOCEAN_SPACES_REGION=
-# NODE_CLOUDSTORAGE_POSTPROCESSOR_ENABLE=false
-# R5P_WEBINAR_ENABLE=false
-# KAFKA_HOST=
-
 RED5_HOME="/usr/local/red5pro"
-PACKAGES_DEFAULT=(jsvc ntp ffmpeg)
 
 log_i() {
     log
@@ -51,41 +41,6 @@ log_e() {
 }
 log() {
     echo -n "[$(date '+%Y-%m-%d %H:%M:%S')]"
-}
-
-install_pkg(){
-    for i in {1..5};
-    do
-        
-        local install_issuse=0;
-        apt-get -y update --fix-missing &> /dev/null
-        
-        for index in ${!PACKAGES[*]}
-        do
-            log_i "Install utility ${PACKAGES[$index]}"
-            apt-get install -y ${PACKAGES[$index]} &> /dev/null
-        done
-        
-        for index in ${!PACKAGES[*]}
-        do
-            PKG_OK=$(dpkg-query -W --showformat='${Status}\n' ${PACKAGES[$index]}|grep "install ok installed")
-            if [ -z "$PKG_OK" ]; then
-                log_i "${PACKAGES[$index]} utility didn't install, didn't find MIRROR !!! "
-                install_issuse=$(($install_issuse+1));
-            else
-                log_i "${PACKAGES[$index]} utility installed"
-            fi
-        done
-        
-        if [ $install_issuse -eq 0 ]; then
-            break
-        fi
-        if [ $i -ge 5 ]; then
-            log_e "Something wrong with packages installation!!! Exit."
-            exit 1
-        fi
-        sleep 20
-    done
 }
 
 config_node_apps_plugins(){
@@ -251,16 +206,7 @@ config_node_apps_plugins(){
     else
         log_d "Red5Pro Digital Ocean Cloudstorage plugin (Spaces) - disable"
     fi
-
-    ### Red5Pro Webhooks
-    if [[ "$NODE_WEBHOOKS_ENABLE" == "true" ]]; then
-        log_i "Red5Pro Webhooks - enable"
-        if [ -z "$NODE_WEBHOOKS_ENDPOINT" ]; then
-            log_e "Parameter NODE_WEBHOOKS_ENDPOINT is empty. EXIT."
-            exit 1
-        fi
-        echo "webhooks.endpoint=$NODE_WEBHOOKS_ENDPOINT" >> $RED5_HOME/webapps/live/WEB-INF/red5-web.properties
-    fi
+    
     ### Red5Pro Round-trip-auth
     if [[ "$NODE_ROUND_TRIP_AUTH_ENABLE" == "true" ]]; then
         log_i "Red5Pro Round-trip-auth - enable"
@@ -304,34 +250,4 @@ config_node_apps_plugins(){
     fi
 }
 
-config_conference_message_svc() {
-    log_i "Configuration ConferenceMessageService bean in ${RED5_HOME}/conf/red5pro-activation.xml"
-
-    sed -i '/<!-- Uncomment to enable conferenceMessageService start/d' "${RED5_HOME}/conf/red5pro-activation.xml"
-    sed -i '/Uncomment to enable conferenceMessageService end -->/d' "${RED5_HOME}/conf/red5pro-activation.xml"
-}
-
-config_kafka_hosts() {
-    log_i "Configure Kafka Host in ${RED5_HOME}/conf/red5pro-activation.xml"
-
-    local def_kafka_host='<property name="address" value="localhost:9092"/>'
-    local def_kafka_host_new='<property name="address" value="'${KAFKA_HOST}':9092"/>'
-
-    sed -i -e "s|$def_kafka_host|$def_kafka_host_new|" "${RED5_HOME}/conf/red5pro-activation.xml"
-}
-
-if [[ "$R5P_WEBINAR_ENABLE" == "true" ]]; then
-    if [ -z "$KAFKA_HOST" ]; then
-        log_w "Variable KAFKA_HOST is empty."
-        var_error=1
-    fi
-    if [[ "$var_error" == "1" ]]; then
-        log_e "One or more variables are empty. EXIT!"
-        exit 1
-    fi
-    config_node_apps_plugins
-    config_conference_message_svc
-    config_kafka_hosts
-else
-    config_node_apps_plugins
-fi
+config_node_apps_plugins
