@@ -27,6 +27,7 @@ locals {
   kafka_standalone_instance       = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
   kafka_standalone_dedicated      = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
   digital_ocean_project_name      = var.digital_ocean_project_use_existing ? var.digital_ocean_existing_project_name : digitalocean_project.do_project[0].name
+  r5as_traefik_host               = local.autoscale ? local.stream_manager_ip : var.https_ssl_certificate_domain_name
   digital_ocean_project_resources = concat(
     compact([ local.standalone ? digitalocean_droplet.red5pro_standalone[0].urn : "" ]),
     compact([ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ]),
@@ -371,7 +372,7 @@ resource "digitalocean_droplet" "red5pro_sm" {
     TF_VAR_digitalocean_ssh_key_name=${local.ssh_key_name}
     TF_VAR_r5p_license_key=${var.red5pro_license_key}
     TRAEFIK_TLS_CHALLENGE=${local.stream_manager_ssl == "letsencrypt" ? "true" : "false"}
-    TRAEFIK_HOST=${var.https_ssl_certificate_domain_name}
+    TRAEFIK_HOST=${local.r5as_traefik_host}
     TRAEFIK_SSL_EMAIL=${var.https_ssl_certificate_email}
     TRAEFIK_CMD=${local.stream_manager_ssl == "imported" ? "--providers.file.filename=/scripts/traefik.yaml" : ""}
   EOF
