@@ -372,7 +372,6 @@ resource "digitalocean_droplet" "red5pro_sm" {
     TF_VAR_digitalocean_ssh_key_name=${local.ssh_key_name}
     TF_VAR_r5p_license_key=${var.red5pro_license_key}
     TRAEFIK_TLS_CHALLENGE=${local.stream_manager_ssl == "letsencrypt" ? "true" : "false"}
-    TRAEFIK_HOST=${local.r5as_traefik_host}
     TRAEFIK_SSL_EMAIL=${var.https_ssl_certificate_email}
     TRAEFIK_CMD=${local.stream_manager_ssl == "imported" ? "--providers.file.filename=/scripts/traefik.yaml" : ""}
   EOF
@@ -391,6 +390,7 @@ resource "null_resource" "red5pro_sm_configuration" {
       "echo 'KAFKA_REPLICAS=${local.kafka_on_sm_replicas}' | sudo tee -a /usr/local/stream-manager/.env",
       "echo 'KAFKA_IP=${local.kafka_ip}' | sudo tee -a /usr/local/stream-manager/.env",
       "echo 'TRAEFIK_IP=${local.stream_manager_ip}' | sudo tee -a /usr/local/stream-manager/.env",
+      "echo 'TRAEFIK_HOST=${local.r5as_traefik_host}' | sudo tee -a /usr/local/stream-manager/.env",
       "echo 'TF_VAR_digitalocean_project_name=${local.digital_ocean_project_name}' | sudo tee -a /usr/local/stream-manager/.env",
       "export SM_SSL='${local.stream_manager_ssl}'",
       "export SM_STANDALONE='${local.stream_manager_standalone}'",
@@ -627,7 +627,7 @@ resource "digitalocean_loadbalancer" "red5pro_lb" {
   healthcheck {
     port     = 80
     protocol = "http"
-    path     = "/"
+    path     = "/as/v1/admin/healthz"
   }
 
   sticky_sessions {
@@ -761,6 +761,7 @@ resource "time_sleep" "wait_for_delete_nodegroup" {
     digitalocean_loadbalancer.red5pro_lb[0],
     null_resource.red5pro_sm_configuration,
     null_resource.red5pro_kafka_standalone_configuration[0],
+    digitalocean_reserved_ip_assignment.sm_ip_association[0]
   ]
   destroy_duration = "90s"
 }
