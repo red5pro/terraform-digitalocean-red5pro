@@ -206,6 +206,10 @@ start_sm() {
             nohup sudo -E "$CURRENT_DIRECTORY/r5p_ssl_check_sm2.sh" >>"$CURRENT_DIRECTORY/r5p_ssl_check_sm2.log" &
         fi
 
+    elif
+        [ "$SM_AUTOSCALE" == "true" ]; then
+        log_i "Stream Manager 2.0 autoscale mode - start service"
+        systemctl start sm.service
     fi
 }
 

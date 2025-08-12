@@ -52,7 +52,7 @@ module "red5pro" {
   stream_manager_version          = "latest"                                                 # Stream Manager 2.0 docker images version (latest, 14.1.0, 14.1.1, etc.) - https://hub.docker.com/r/red5pro/as-admin/tags
 
   # Terraform Service configuration
-  kafka_standalone_droplet_size    = "c-4"                                                   # Terraform service droplet size
+  kafka_standalone_droplet_size    = "c-8"                                                   # Terraform service droplet size
 
   # Load Balancer configuration for Stream Manager
   create_load_balancer_with_ssl  = true                                                      # Create a new SSL certificate for Load Balancer (autoscaling)
