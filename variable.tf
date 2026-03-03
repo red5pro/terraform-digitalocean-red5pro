@@ -79,7 +79,7 @@ variable "kafka_standalone_droplet_size" {
 variable "kafka_standalone_instance_arhive_url" {
   description = "Kafka standalone instance - archive URL"
   type        = string
-  default     = "https://downloads.apache.org/kafka/3.8.0/kafka_2.13-3.8.0.tgz"
+  default     = "https://downloads.apache.org/kafka/3.9.2/kafka_2.13-3.9.2.tgz"
 }
 
 # Digital Ocean Firewall Configuration to allow required ports of red5pro stream manager droplet
