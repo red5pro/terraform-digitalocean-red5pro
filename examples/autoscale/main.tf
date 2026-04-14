@@ -50,6 +50,7 @@ module "red5pro" {
   stream_manager_spatial_user     = "example_spatial_user"                                   # Stream Manager 2.0 spatial user name
   stream_manager_spatial_password = "example_spatial_password"                               # Stream Manager 2.0 spatial password
   stream_manager_version          = "latest"                                                 # Stream Manager 2.0 docker images version (latest, 14.1.0, 14.1.1, etc.) - https://hub.docker.com/r/red5pro/as-admin/tags
+  stream_manager_public_hostname  = "sm.example.com"                                         # Required: public FQDN for Traefik, admin UI, and HTTPS URLs (not a wildcard). Point DNS A/alias at the load balancer DNS name from outputs.
 
   # Terraform Service configuration
   kafka_standalone_droplet_size    = "c-8"                                                   # Terraform service droplet size
@@ -126,6 +127,6 @@ module "red5pro" {
 }
 
 output "module_output" {
-  sensitive = true
+  sensitive = false
   value     = module.red5pro
 }

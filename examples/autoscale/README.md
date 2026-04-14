@@ -1,5 +1,8 @@
 ## Red5 Pro Stream Manager cluster with Load Balancer Stream Managers (autoscale) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/main/example/autoscale)
 
+**`stream_manager_public_hostname`:** Set this to the DNS name clients use for Stream Manager (e.g. `sm.example.com`). It sets Traefik’s host, the admin UI API base, and outputs such as `stream_manager_url_https`. Use a concrete FQDN, not a wildcard. Point DNS at the load balancer hostname from outputs. For TLS, `https_ssl_certificate_domain_name` may be a wildcard (e.g. `*.example.com`) or an ACM primary name if that certificate covers this hostname.
+
+
 - VPC
 - Public subnet
 - Firewall for Stream Manager 2.0

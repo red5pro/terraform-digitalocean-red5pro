@@ -37,8 +37,8 @@ output "stream_manager_http_url" {
 }
 
 output "stream_manager_https_url" {
-  description = "Stream Manager HTTPS URL"
-  value       = local.cluster ? var.https_ssl_certificate != "none" ? "https://${var.https_ssl_certificate_domain_name}:443" : null : null
+  description = "Stream Manager HTTPS URL (hostname from stream_manager_public_hostname, not https_ssl_certificate_domain_name — supports wildcard certs)"
+  value       = local.cluster ? var.https_ssl_certificate != "none" && var.stream_manager_public_hostname != "" ? "https://${var.stream_manager_public_hostname}:443" : null : null
 }
 
 output "standalone_red5pro_server_ip" {
@@ -72,6 +72,6 @@ output "load_balancer_http_url" {
 }
 
 output "manual_dns_record" {
-  description = "Manual DNS Record"
-  value       = var.https_ssl_certificate != "none" ? "Please create DNS A record for Stream Manager 2.0: '${local.autoscale ? "your.domain.name" : var.https_ssl_certificate_domain_name} - ${local.cluster_or_autoscale ? local.stream_manager_ip : local.standalone_server_ip}'" : null
+  description = "DNS hint for TLS: cluster/autoscale uses stream_manager_public_hostname; standalone uses https_ssl_certificate_domain_name"
+  value       = local.autoscale ? ( "Please create DNS A record for Stream Manager 2.0: '${var.stream_manager_public_hostname}' -> '${local.stream_manager_ip}'" ) : var.https_ssl_certificate != "none" ? ( local.cluster_or_autoscale ? "Please create DNS A record for Stream Manager 2.0: '${var.stream_manager_public_hostname}' -> '${local.stream_manager_ip}'" : "Please create DNS A record for Standalone Red5 Pro: '${var.https_ssl_certificate_domain_name}' -> '${local.standalone_server_ip}'" ) : ""
 }
