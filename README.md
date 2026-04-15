@@ -159,6 +159,8 @@ output "module_output" {
 
 ## Red5 Pro Stream Manager cluster deployment (cluster) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/master/examples/cluster)
 
+Set **`stream_manager_public_hostname`** to the DNS name clients use for Stream Manager (e.g. `sm.example.com`). It configures Traefik, the admin UI API base URL, and outputs such as `stream_manager_url_https`. Use a real FQDN, not a wildcard. **`https_ssl_certificate_domain_name`** is separate: it identifies the TLS certificate (and may be a wildcard like `*.example.com` or an ACM primary name) as long as the cert covers `stream_manager_public_hostname`.
+
 - VPC
 - Public subnet
 - Firewall for Stream Manager 2.0
@@ -320,6 +322,8 @@ output "module_output" {
 ---
 
 ## Red5 Pro Stream Manager cluster with Load Balancer Stream Managers (autoscale) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/master/examples/autoscale)
+
+Set **`stream_manager_public_hostname`** to the DNS name clients use (e.g. `sm.example.com`); point DNS at the load balancer hostname from outputs. It configures Traefik, the admin UI, and `stream_manager_url_https`. Use a concrete FQDN, not a wildcard. **`https_ssl_certificate_domain_name`** selects the ACM / TLS identity and may be a wildcard if it covers this hostname.
 
 - VPC
 - Public subnet
