@@ -27,7 +27,7 @@ locals {
   kafka_standalone_instance       = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
   kafka_standalone_dedicated      = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
   digital_ocean_project_name      = var.digital_ocean_project_use_existing ? var.digital_ocean_existing_project_name : digitalocean_project.do_project[0].name
-  r5as_traefik_host               = local.autoscale ? local.stream_manager_ip : var.https_ssl_certificate_domain_name
+  red5pro_node_image_name         = local.cluster_or_autoscale && var.node_image_create ? "${var.name}-node-image-${formatdate("DDMMMYY-hhmm", timestamp())}" : ""
   digital_ocean_project_resources = concat(
     compact([ local.standalone ? digitalocean_droplet.red5pro_standalone[0].urn : "" ]),
     compact([ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ]),
@@ -398,8 +398,12 @@ resource "null_resource" "red5pro_sm_configuration" {
       "echo 'KAFKA_REPLICAS=${local.kafka_on_sm_replicas}' | sudo tee -a /usr/local/stream-manager/.env",
       "echo 'KAFKA_IP=${local.kafka_ip}' | sudo tee -a /usr/local/stream-manager/.env",
       "echo 'TRAEFIK_IP=${local.stream_manager_ip}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'TRAEFIK_HOST=${local.r5as_traefik_host}' | sudo tee -a /usr/local/stream-manager/.env",
+      "echo 'TRAEFIK_HOST=${var.stream_manager_public_hostname}' | sudo tee -a /usr/local/stream-manager/.env",
       "echo 'TF_VAR_digitalocean_project_name=${local.digital_ocean_project_name}' | sudo tee -a /usr/local/stream-manager/.env",
+      "echo 'AS_ADMIN_UI_VERSION=${var.stream_manager_admin_ui_version}' | sudo tee -a /usr/local/stream-manager/.env",
+      "echo 'AS_ADMIN_UI_MAIN_REGION=${var.digital_ocean_region}' | sudo tee -a /usr/local/stream-manager/.env",
+      "echo 'AS_ADMIN_UI_NODE_IMAGE_NAME=${local.red5pro_node_image_name}' | sudo tee -a /usr/local/stream-manager/.env",
+      "echo 'AS_ADMIN_UI_DIGITALOCEAN_VPC=${local.vpc_name}' | sudo tee -a /usr/local/stream-manager/.env",
       "export SM_SSL='${local.stream_manager_ssl}'",
       "export SM_STANDALONE='${local.stream_manager_standalone}'",
       "export SM_AUTOSCALE='${local.stream_manager_autoscale}'",
@@ -419,6 +423,12 @@ resource "null_resource" "red5pro_sm_configuration" {
     }
   }
   depends_on = [tls_cert_request.kafka_server_csr, null_resource.red5pro_kafka_standalone_configuration]
+  lifecycle {
+    precondition {
+      condition     = var.stream_manager_public_hostname != ""
+      error_message = "ERROR! Value in variable stream_manager_public_hostname must be a valid FQDN! Example: sm.example.com"
+    }
+  }
 }
 
 ################################################################################
@@ -727,7 +737,7 @@ resource "digitalocean_droplet" "red5pro_node_instance" {
 resource "digitalocean_droplet_snapshot" "node-snapshot" {
   count          = local.cluster_or_autoscale && var.node_image_create ? 1 : 0
   droplet_id     = digitalocean_droplet.red5pro_node_instance[0].id
-  name           = "${var.name}-node-image-${formatdate("DDMMMYY-hhmm", timestamp())}"
+  name           = local.red5pro_node_image_name
   depends_on     = [null_resource.poweroff_node_instance]
   lifecycle {
     ignore_changes = [ name ]

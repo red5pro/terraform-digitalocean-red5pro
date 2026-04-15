@@ -48,6 +48,8 @@ cp ~/Downloads/red5pro-server-0.0.0.b0-release.zip ./
 
 ### Terraform Deployed Resources (standalone)
 
+**`stream_manager_public_hostname`** is only for **cluster** and **autoscale** deployments. Standalone uses **`https_ssl_certificate_domain_name`** when TLS is enabled
+
 - VPC
 - Public subnet
 - Firewall for Standalone Red5 Pro server
@@ -61,6 +63,17 @@ cp ~/Downloads/red5pro-server-0.0.0.b0-release.zip ./
 ## Usage (standalone)
 
 ```hcl
+terraform {
+  required_version = ">= 1.0"
+  
+  required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = ">=2.47.0"
+    }
+  }
+}
+
 provider "digitalocean" {
   token                     = "dop_v1_example"                                               # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
 }
@@ -125,14 +138,14 @@ module "red5pro" {
 
   # # Example of Let's Encrypt HTTPS/SSL certificate configuration - please uncomment and provide your domain name and email
   # https_ssl_certificate                       = "letsencrypt"
-  # https_ssl_certificate_domain_name           = "red5pro.example.com"
-  # https_ssl_certificate_email                 = "email@example.com"
+  # https_ssl_certificate_domain_name           = "red5pro.example.com"                                 # FQDN on the certificate and in browser HTTPS URLs for this server
+  # https_ssl_certificate_email                 = "email@example.com"                                   # Replace with your email
 
   # # Example of imported HTTPS/SSL certificate configuration - please uncomment and provide your domain name, certificate and key paths
   # https_ssl_certificate                       = "imported"
-  # https_ssl_certificate_domain_name           = "red5pro.example.com"
-  # https_ssl_certificate_cert_path             = "/PATH/TO/SSL/CERT/fullchain.pem"
-  # https_ssl_certificate_key_path              = "/PATH/TO/SSL/KEY/privkey.pem"
+  # https_ssl_certificate_domain_name           = "red5pro.example.com"                                 # FQDN on the certificate and in browser HTTPS URLs for this server
+  # https_ssl_certificate_cert_path             = "/PATH/TO/SSL/CERT/fullchain.pem"                     # Path to cert file or full chain file
+  # https_ssl_certificate_key_path              = "/PATH/TO/SSL/KEY/privkey.pem"                        # Path to privkey file
 
 }
 
@@ -145,6 +158,8 @@ output "module_output" {
 ---
 
 ## Red5 Pro Stream Manager cluster deployment (cluster) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/master/examples/cluster)
+
+Set **`stream_manager_public_hostname`** to the DNS name clients use for Stream Manager (e.g. `sm.example.com`). It configures Traefik, the admin UI API base URL, and outputs such as `stream_manager_url_https`. Use a real FQDN, not a wildcard. **`https_ssl_certificate_domain_name`** is separate: it identifies the TLS certificate (and may be a wildcard like `*.example.com` or an ACM primary name) as long as the cert covers `stream_manager_public_hostname`.
 
 - VPC
 - Public subnet
@@ -164,6 +179,17 @@ output "module_output" {
 ## Usage (cluster)
 
 ```hcl
+terraform {
+  required_version = ">= 1.0"
+  
+  required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = ">=2.34.0"
+    }
+  }
+}
+
 provider "digitalocean" {
   token                     = "dop_v1_example"                                               # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
 }   
@@ -203,6 +229,7 @@ module "red5pro" {
   stream_manager_spatial_user     = "example_spatial_user"                                   # Stream Manager 2.0 spatial user name
   stream_manager_spatial_password = "example_spatial_password"                               # Stream Manager 2.0 spatial password
   stream_manager_version          = "latest"                                                 # Stream Manager 2.0 docker images version (latest, 14.1.0, 14.1.1, etc.) - https://hub.docker.com/r/red5pro/as-admin/tags
+  stream_manager_public_hostname  = "sm.example.com"                                         # Required: public FQDN for Traefik, admin UI, and HTTPS URLs (not a wildcard). Point DNS A record at the Stream Manager IP from outputs.
 
   # Terraform Service configuration
   kafka_standalone_instance_create = false                                                   # true - Create a dedicate terraform service droplet, false - install terraform service locally on the stream manager                                                   # Terraform service parallelism
@@ -218,14 +245,14 @@ module "red5pro" {
 
   # Example of Let's Encrypt HTTPS/SSL certificate configuration - please uncomment and provide your domain name and email
   # https_ssl_certificate             = "letsencrypt"
-  # https_ssl_certificate_domain_name = "red5pro.example.com"
-  # https_ssl_certificate_email       = "email@example.com"
+  # https_ssl_certificate_domain_name = "red5pro.example.com"                                # Cert domain name (may be *.example.com); must cover stream_manager_public_hostname
+  # https_ssl_certificate_email       = "email@example.com"                                  # Replace with your email
 
   # Example of imported HTTPS/SSL certificate configuration - please uncomment and provide your domain name, certificate and key paths
   # https_ssl_certificate             = "imported"
-  # https_ssl_certificate_domain_name = "red5pro.example.com"
-  # https_ssl_certificate_cert_path   = "/PATH/TO/SSL/CERT/fullchain.pem"
-  # https_ssl_certificate_key_path    = "/PATH/TO/SSL/KEY/privkey.pem"
+  # https_ssl_certificate_domain_name = "red5pro.example.com"                                # Cert domain name (may be *.example.com); must cover stream_manager_public_hostname
+  # https_ssl_certificate_cert_path   = "/PATH/TO/SSL/CERT/fullchain.pem"                    # Path to cert file or full chain file
+  # https_ssl_certificate_key_path    = "/PATH/TO/SSL/KEY/privkey.pem"                       # Path to privkey file
 
   # Red5 Pro autoscaling Origin node image configuration
   node_image_create                                      = true                            # Default: true for Autoscaling and Cluster, true - create new Origin node image, false - not create new Origin node image
@@ -287,7 +314,7 @@ module "red5pro" {
 }
 
 output "module_output" {
-  sensitive = true
+  sensitive = false
   value     = module.red5pro
 }
 ```
@@ -295,6 +322,8 @@ output "module_output" {
 ---
 
 ## Red5 Pro Stream Manager cluster with Load Balancer Stream Managers (autoscale) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/master/examples/autoscale)
+
+Set **`stream_manager_public_hostname`** to the DNS name clients use (e.g. `sm.example.com`); point DNS at the load balancer hostname from outputs. It configures Traefik, the admin UI, and `stream_manager_url_https`. Use a concrete FQDN, not a wildcard. **`https_ssl_certificate_domain_name`** selects the ACM / TLS identity and may be a wildcard if it covers this hostname.
 
 - VPC
 - Public subnet
@@ -315,6 +344,16 @@ output "module_output" {
 ## Usage (autoscale)
 
 ```hcl
+terraform {
+  required_version = ">= 1.0"
+  
+  required_providers {
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = ">=2.34.0"
+    }
+  }
+}
 
 provider "digitalocean" {
   token                     = "dop_v1_example"                                               # Digital Ocean token (https://cloud.digitalocean.com/account/api/tokens)
@@ -354,9 +393,10 @@ module "red5pro" {
   stream_manager_spatial_user     = "example_spatial_user"                                   # Stream Manager 2.0 spatial user name
   stream_manager_spatial_password = "example_spatial_password"                               # Stream Manager 2.0 spatial password
   stream_manager_version          = "latest"                                                 # Stream Manager 2.0 docker images version (latest, 14.1.0, 14.1.1, etc.) - https://hub.docker.com/r/red5pro/as-admin/tags
+  stream_manager_public_hostname  = "sm.example.com"                                         # Required: public FQDN for Traefik, admin UI, and HTTPS URLs (not a wildcard). Point DNS A/alias at the load balancer DNS name from outputs.
 
   # Terraform Service configuration
-  kafka_standalone_droplet_size    = "c-4"                                                   # Terraform service droplet size
+  kafka_standalone_droplet_size    = "c-8"                                                   # Terraform service droplet size
 
   # Load Balancer configuration for Stream Manager
   create_load_balancer_with_ssl  = true                                                      # Create a new SSL certificate for Load Balancer (autoscaling)
@@ -430,7 +470,7 @@ module "red5pro" {
 }
 
 output "module_output" {
-  sensitive = true
+  sensitive = false
   value     = module.red5pro
 }
 ```
