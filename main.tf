@@ -27,7 +27,7 @@ locals {
   kafka_standalone_instance       = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
   kafka_standalone_dedicated      = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
   digital_ocean_project_name      = var.digital_ocean_project_use_existing ? var.digital_ocean_existing_project_name : digitalocean_project.do_project[0].name
-  red5pro_node_image_name         = local.cluster_or_autoscale && var.node_image_create ? "${var.name}-node-image-${formatdate("DDMMMYY-hhmm", timestamp())}" : ""
+  red5pro_node_image_name         = local.cluster_or_autoscale && var.node_image_create ? "${var.name}-node-image-${random_id.node_image_suffix[0].hex}" : ""
   digital_ocean_project_resources = concat(
     compact([ local.standalone ? digitalocean_droplet.red5pro_standalone[0].urn : "" ]),
     compact([ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ]),
@@ -373,6 +373,8 @@ resource "digitalocean_droplet" "red5pro_sm" {
     R5AS_PROXY_PASS=${var.stream_manager_proxy_password}
     R5AS_SPATIAL_USER=${var.stream_manager_spatial_user}
     R5AS_SPATIAL_PASS=${var.stream_manager_spatial_password}
+    R5AS_CONFERENCE_SECRET=${random_id.r5as_conference_secret[0].hex}
+    R5AS_NODE_API_ACCESS_TOKEN=${var.red5pro_api_key}
     CONTAINER_REGISTRY=${var.stream_manager_container_registry}
     AS_VERSION=${var.stream_manager_version}
     AS_TESTBED_VERSION=${var.stream_manager_testbed_version}
@@ -733,6 +735,16 @@ resource "digitalocean_droplet" "red5pro_node_instance" {
 #####################################
 # Red5 Pro Autoscale Nodes image
 #####################################
+resource "random_id" "r5as_conference_secret" {
+  count       = local.cluster_or_autoscale ? 1 : 0
+  byte_length = 16
+}
+
+resource "random_id" "node_image_suffix" {
+  count       = local.cluster_or_autoscale && var.node_image_create ? 1 : 0
+  byte_length = 4
+}
+
 # Node - Create image
 resource "digitalocean_droplet_snapshot" "node-snapshot" {
   count          = local.cluster_or_autoscale && var.node_image_create ? 1 : 0
