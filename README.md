@@ -275,15 +275,6 @@ module "red5pro" {
     auth_endpoint_validate   = "/validateCredentials",
     auth_endpoint_invalidate = "/invalidateCredentials"
   }
-  # Restreamer configuration - (Optional) https://www.red5.net/docs/special/restreamer/overview/
-  node_config_restreamer = {
-    enable               = false,
-    target_nodes         = ["origin", "transcoder"],
-    restreamer_tsingest  = true,
-    restreamer_ipcam     = true,
-    restreamer_whip      = true,
-    restreamer_srtingest = true
-  }
   # Social Pusher configuration - (Optional) https://www.red5.net/docs/development/social-media-plugin/rest-api/
   node_config_social_pusher = {
     enable       = false,
@@ -291,22 +282,19 @@ module "red5pro" {
   }
 
   # Red5 Pro autoscaling Node group - (Optional)
-  node_group_create                    = true                      # Linux or Mac OS only. true - create new Node group, false - not create new Node group
+  node_group_create                   = true  # Linux or Mac OS only. true - create new Node group, false - not create new Node group
   node_group_origins_min               = 1                         # Number of minimum Origins
   node_group_origins_max               = 20                        # Number of maximum Origins
   node_group_origins_droplet_size      = "c-2"                     # Origins Instance Type
   node_group_origins_volume_size       = 50                        # Volume size in GB for Origins
-  node_group_origins_connection_limit  = 20                        # Maximum number of publishers to the origin server
   node_group_edges_min                 = 1                         # Number of minimum Edges
   node_group_edges_max                 = 40                        # Number of maximum Edges
   node_group_edges_droplet_size        = "c-2"                     # Edges Instance Type
   node_group_edges_volume_size         = 50                        # Volume size in GB for Edges
-  node_group_edges_connection_limit    = 200                       # Maximum number of subscribers to the edge server
   node_group_transcoders_min           = 0                         # Number of minimum Transcoders
   node_group_transcoders_max           = 20                        # Number of maximum Transcoders
   node_group_transcoders_droplet_size  = "c-2"                     # Transcoders Instance Type
   node_group_transcoders_volume_size   = 50                        # Volume size in GB for Transcoders
-  node_group_transcoders_connection_limit = 20                     # Maximum number of publishers to the transcoder server
   node_group_relays_min                = 0                         # Number of minimum Relays
   node_group_relays_max                = 20                        # Number of maximum Relays
   node_group_relays_droplet_size       = "c-2"                     # Relays Instance Type
@@ -431,15 +419,6 @@ module "red5pro" {
     auth_endpoint_validate   = "/validateCredentials",
     auth_endpoint_invalidate = "/invalidateCredentials"
   }
-  # Restreamer configuration - (Optional) https://www.red5.net/docs/special/restreamer/overview/
-  node_config_restreamer = {
-    enable               = false,
-    target_nodes         = ["origin", "transcoder"],
-    restreamer_tsingest  = true,
-    restreamer_ipcam     = true,
-    restreamer_whip      = true,
-    restreamer_srtingest = true
-  }
   # Social Pusher configuration - (Optional) https://www.red5.net/docs/development/social-media-plugin/rest-api/
   node_config_social_pusher = {
     enable       = false,
@@ -447,22 +426,19 @@ module "red5pro" {
   }
 
   # Red5 Pro autoscaling Node group - (Optional)
-  node_group_create                    = true                      # Linux or Mac OS only. true - create new Node group, false - not create new Node group
+  node_group_create                   = true  # Linux or Mac OS only. true - create new Node group, false - not create new Node group
   node_group_origins_min               = 1                         # Number of minimum Origins
   node_group_origins_max               = 20                        # Number of maximum Origins
   node_group_origins_droplet_size      = "c-2"                     # Origins Instance Type
   node_group_origins_volume_size       = 50                        # Volume size in GB for Origins
-  node_group_origins_connection_limit  = 20                        # Maximum number of publishers to the origin server
   node_group_edges_min                 = 1                         # Number of minimum Edges
   node_group_edges_max                 = 40                        # Number of maximum Edges
   node_group_edges_droplet_size        = "c-2"                     # Edges Instance Type
   node_group_edges_volume_size         = 50                        # Volume size in GB for Edges
-  node_group_edges_connection_limit    = 200                       # Maximum number of subscribers to the edge server
   node_group_transcoders_min           = 0                         # Number of minimum Transcoders
   node_group_transcoders_max           = 20                        # Number of maximum Transcoders
   node_group_transcoders_droplet_size  = "c-2"                     # Transcoders Instance Type
   node_group_transcoders_volume_size   = 50                        # Volume size in GB for Transcoders
-  node_group_transcoders_connection_limit = 20                     # Maximum number of publishers to the transcoder server
   node_group_relays_min                = 0                         # Number of minimum Relays
   node_group_relays_max                = 20                        # Number of maximum Relays
   node_group_relays_droplet_size       = "c-2"                     # Relays Instance Type
