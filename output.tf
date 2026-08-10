@@ -37,7 +37,7 @@ output "stream_manager_http_url" {
 }
 
 output "stream_manager_https_url" {
-  description = "Stream Manager HTTPS URL (hostname from stream_manager_public_hostname, not https_ssl_certificate_domain_name — supports wildcard certs)"
+  description = "Stream Manager HTTPS URL (hostname from stream_manager_public_hostname, which is also the certificate subject for cluster/autoscale)"
   value       = local.cluster ? var.https_ssl_certificate != "none" && var.stream_manager_public_hostname != "" ? "https://${var.stream_manager_public_hostname}:443" : null : null
 }
 

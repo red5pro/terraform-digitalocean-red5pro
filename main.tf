@@ -409,7 +409,6 @@ resource "null_resource" "red5pro_sm_configuration" {
       "export SM_STANDALONE='${local.stream_manager_standalone}'",
       "export SM_AUTOSCALE='${local.stream_manager_autoscale}'",
       "export KAFKA_REPLICAS='${local.kafka_on_sm_replicas}'",
-      "export SM_SSL_DOMAIN='${var.https_ssl_certificate_domain_name}'",
       "export CONTAINER_REGISTRY='${var.stream_manager_container_registry}'",
       "export CONTAINER_REGISTRY_USER='${var.stream_manager_container_registry_user}'",
       "export CONTAINER_REGISTRY_PASSWORD='${var.stream_manager_container_registry_password}'",

@@ -159,7 +159,7 @@ output "module_output" {
 
 ## Red5 Pro Stream Manager cluster deployment (cluster) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/master/examples/cluster)
 
-Set **`stream_manager_public_hostname`** to the DNS name clients use for Stream Manager (e.g. `sm.example.com`). It configures Traefik, the admin UI API base URL, and outputs such as `stream_manager_url_https`. Use a real FQDN, not a wildcard. **`https_ssl_certificate_domain_name`** is separate: it identifies the TLS certificate (and may be a wildcard like `*.example.com` or an ACM primary name) as long as the cert covers `stream_manager_public_hostname`.
+Set **`stream_manager_public_hostname`** to the DNS name clients use for Stream Manager (e.g. `sm.example.com`). It configures Traefik, the admin UI API base URL, and outputs such as `stream_manager_url_https`. Use a real FQDN, not a wildcard. It is also the certificate subject: with `letsencrypt` the ACME challenge is issued for this hostname, and with `imported` the certificate you supply must cover it. **`https_ssl_certificate_domain_name`** is not used for cluster deployments.
 
 - VPC
 - Public subnet
@@ -245,12 +245,10 @@ module "red5pro" {
 
   # Example of Let's Encrypt HTTPS/SSL certificate configuration - please uncomment and provide your domain name and email
   # https_ssl_certificate             = "letsencrypt"
-  # https_ssl_certificate_domain_name = "red5pro.example.com"                                # Cert domain name (may be *.example.com); must cover stream_manager_public_hostname
   # https_ssl_certificate_email       = "email@example.com"                                  # Replace with your email
 
   # Example of imported HTTPS/SSL certificate configuration - please uncomment and provide your domain name, certificate and key paths
   # https_ssl_certificate             = "imported"
-  # https_ssl_certificate_domain_name = "red5pro.example.com"                                # Cert domain name (may be *.example.com); must cover stream_manager_public_hostname
   # https_ssl_certificate_cert_path   = "/PATH/TO/SSL/CERT/fullchain.pem"                    # Path to cert file or full chain file
   # https_ssl_certificate_key_path    = "/PATH/TO/SSL/KEY/privkey.pem"                       # Path to privkey file
 
@@ -311,7 +309,7 @@ output "module_output" {
 
 ## Red5 Pro Stream Manager cluster with Load Balancer Stream Managers (autoscale) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/master/examples/autoscale)
 
-Set **`stream_manager_public_hostname`** to the DNS name clients use (e.g. `sm.example.com`); point DNS at the load balancer hostname from outputs. It configures Traefik, the admin UI, and `stream_manager_url_https`. Use a concrete FQDN, not a wildcard. **`https_ssl_certificate_domain_name`** selects the ACM / TLS identity and may be a wildcard if it covers this hostname.
+Set **`stream_manager_public_hostname`** to the DNS name clients use (e.g. `sm.example.com`); point DNS at the load balancer hostname from outputs. It configures Traefik, the admin UI, and `stream_manager_url_https`. Use a concrete FQDN, not a wildcard. TLS for the load balancer is configured separately through `create_load_balancer_with_ssl`. **`https_ssl_certificate_domain_name`** is not used for autoscale deployments.
 
 - VPC
 - Public subnet
