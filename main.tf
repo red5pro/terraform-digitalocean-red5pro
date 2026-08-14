@@ -1,39 +1,39 @@
 locals {
-  standalone                      = var.type == "standalone" ? true : false
-  cluster                         = var.type == "cluster" ? true : false
-  autoscale                       = var.type == "autoscale" ? true : false
-  cluster_or_autoscale            = local.cluster || local.autoscale ? true : false
-  ssh_key_name                    = var.ssh_key_use_existing ? data.digitalocean_ssh_key.ssh_key_pair[0].name : digitalocean_ssh_key.red5pro_ssh_key[0].name
-  ssh_key_public                  = var.ssh_key_use_existing ? data.digitalocean_ssh_key.ssh_key_pair[0].id :digitalocean_ssh_key.red5pro_ssh_key[0].fingerprint
-  ssh_private_key                 = var.ssh_key_use_existing ? file(var.ssh_key_private_key_path_existing) : tls_private_key.red5pro_ssh_key[0].private_key_pem
-  ssh_private_key_path            = var.ssh_key_use_existing ? var.ssh_key_private_key_path_existing : local_file.red5pro_ssh_key_pem[0].filename 
-  vpc_id                          = var.vpc_use_existing ? data.digitalocean_vpc.existing_vpc[0].id :digitalocean_vpc.red5pro_vpc[0].id
-  vpc_name                        = var.vpc_use_existing ? data.digitalocean_vpc.existing_vpc[0].name : digitalocean_vpc.red5pro_vpc[0].name
-  standalone_server_ip            = local.standalone ? var.standalone_server_reserved_ip_use_existing ? data.digitalocean_reserved_ip.existing_standalone_server_reserved_ip[0].ip_address : digitalocean_reserved_ip.red5pro_standalone_reserved_ip[0].ip_address : "null"
-  load_balancer_ip                = local.autoscale ? digitalocean_loadbalancer.red5pro_lb[0].ip : "null"
-  load_balancer_certificate_name  = local.autoscale && var.create_load_balancer_with_ssl ? digitalocean_certificate.new_lb_cert[0].name : null
-  stream_manager_ip               = local.autoscale ? digitalocean_loadbalancer.red5pro_lb[0].ip : local.cluster ? var.stream_manager_reserved_ip_use_existing ? data.digitalocean_reserved_ip.existing_sm_reserved_ip[0].ip_address : digitalocean_reserved_ip.red5pro_sm_reserved_ip[0].ip_address : "null"  
-  stream_managers_amount          = local.autoscale ? var.stream_managers_amount : local.cluster ? 1 : 0
-  stream_manager_ssl              = local.autoscale ? "none" : var.https_ssl_certificate
-  stream_manager_standalone       = local.autoscale ? false : true
-  stream_manager_autoscale        = local.autoscale ? true : false
-  stream_managers_id              = [ for red5pro_sm in digitalocean_droplet.red5pro_sm : red5pro_sm.id ]
-  stream_managers_urn             = [ for red5pro_sm in digitalocean_droplet.red5pro_sm : red5pro_sm.urn ]
-  kafka_ip                        = local.cluster_or_autoscale ? local.kafka_standalone_instance ? digitalocean_droplet.red5pro_kafka_standalone[0].ipv4_address_private : digitalocean_droplet.red5pro_sm[0].ipv4_address_private : "null"
-  kafka_on_sm_replicas            = local.kafka_standalone_instance ? 0 : 1
-  kafka_ssl_keystore_key          = local.cluster_or_autoscale ? nonsensitive(join("\\\\n", split("\n", trimspace(tls_private_key.kafka_server_key[0].private_key_pem_pkcs8)))) : "null"
-  kafka_ssl_truststore_cert       = local.cluster_or_autoscale ? nonsensitive(join("\\\\n", split("\n", tls_self_signed_cert.ca_cert[0].cert_pem))) : "null"
-  kafka_ssl_keystore_cert_chain   = local.cluster_or_autoscale ? nonsensitive(join("\\\\n", split("\n", tls_locally_signed_cert.kafka_server_cert[0].cert_pem))) : "null"
-  kafka_standalone_instance       = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
-  kafka_standalone_dedicated      = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
-  digital_ocean_project_name      = var.digital_ocean_project_use_existing ? var.digital_ocean_existing_project_name : digitalocean_project.do_project[0].name
-  red5pro_node_image_name         = local.cluster_or_autoscale && var.node_image_create ? "${var.name}-node-image-${random_id.node_image_suffix[0].hex}" : ""
+  standalone                     = var.type == "standalone"
+  cluster                        = var.type == "cluster"
+  autoscale                      = var.type == "autoscale"
+  cluster_or_autoscale           = local.cluster || local.autoscale
+  ssh_key_name                   = var.ssh_key_use_existing ? data.digitalocean_ssh_key.ssh_key_pair[0].name : digitalocean_ssh_key.red5pro_ssh_key[0].name
+  ssh_key_public                 = var.ssh_key_use_existing ? data.digitalocean_ssh_key.ssh_key_pair[0].id : digitalocean_ssh_key.red5pro_ssh_key[0].fingerprint
+  ssh_private_key                = var.ssh_key_use_existing ? file(var.ssh_key_private_key_path_existing) : tls_private_key.red5pro_ssh_key[0].private_key_pem
+  ssh_private_key_path           = var.ssh_key_use_existing ? var.ssh_key_private_key_path_existing : local_file.red5pro_ssh_key_pem[0].filename
+  vpc_id                         = var.vpc_use_existing ? data.digitalocean_vpc.existing_vpc[0].id : digitalocean_vpc.red5pro_vpc[0].id
+  vpc_name                       = var.vpc_use_existing ? data.digitalocean_vpc.existing_vpc[0].name : digitalocean_vpc.red5pro_vpc[0].name
+  standalone_server_ip           = local.standalone ? var.standalone_server_reserved_ip_use_existing ? data.digitalocean_reserved_ip.existing_standalone_server_reserved_ip[0].ip_address : digitalocean_reserved_ip.red5pro_standalone_reserved_ip[0].ip_address : "null"
+  load_balancer_ip               = local.autoscale ? digitalocean_loadbalancer.red5pro_lb[0].ip : "null"
+  load_balancer_certificate_name = local.autoscale && var.create_load_balancer_with_ssl ? digitalocean_certificate.new_lb_cert[0].name : null
+  stream_manager_ip              = local.autoscale ? digitalocean_loadbalancer.red5pro_lb[0].ip : local.cluster ? var.stream_manager_reserved_ip_use_existing ? data.digitalocean_reserved_ip.existing_sm_reserved_ip[0].ip_address : digitalocean_reserved_ip.red5pro_sm_reserved_ip[0].ip_address : "null"
+  stream_managers_amount         = local.autoscale ? var.stream_managers_amount : local.cluster ? 1 : 0
+  stream_manager_ssl             = local.autoscale ? "none" : var.https_ssl_certificate
+  stream_manager_standalone      = local.autoscale ? false : true
+  stream_manager_autoscale       = local.autoscale
+  stream_managers_id             = [for red5pro_sm in digitalocean_droplet.red5pro_sm : red5pro_sm.id]
+  stream_managers_urn            = [for red5pro_sm in digitalocean_droplet.red5pro_sm : red5pro_sm.urn]
+  kafka_ip                       = local.cluster_or_autoscale ? local.kafka_standalone_instance ? digitalocean_droplet.red5pro_kafka_standalone[0].ipv4_address_private : digitalocean_droplet.red5pro_sm[0].ipv4_address_private : "null"
+  kafka_on_sm_replicas           = local.kafka_standalone_instance ? 0 : 1
+  kafka_ssl_keystore_key         = local.cluster_or_autoscale ? nonsensitive(join("\\\\n", split("\n", trimspace(tls_private_key.kafka_server_key[0].private_key_pem_pkcs8)))) : "null"
+  kafka_ssl_truststore_cert      = local.cluster_or_autoscale ? nonsensitive(join("\\\\n", split("\n", tls_self_signed_cert.ca_cert[0].cert_pem))) : "null"
+  kafka_ssl_keystore_cert_chain  = local.cluster_or_autoscale ? nonsensitive(join("\\\\n", split("\n", tls_locally_signed_cert.kafka_server_cert[0].cert_pem))) : "null"
+  kafka_standalone_instance      = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
+  kafka_standalone_dedicated     = local.autoscale ? true : local.cluster && var.kafka_standalone_instance_create ? true : false
+  digital_ocean_project_name     = var.digital_ocean_project_use_existing ? var.digital_ocean_existing_project_name : digitalocean_project.do_project[0].name
+  red5pro_node_image_name        = local.cluster_or_autoscale && var.node_image_create ? "${var.name}-node-image-${random_id.node_image_suffix[0].hex}" : ""
   digital_ocean_project_resources = concat(
-    compact([ local.standalone ? digitalocean_droplet.red5pro_standalone[0].urn : "" ]),
-    compact([ local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : "" ]),
-    compact([ local.kafka_standalone_dedicated ? digitalocean_droplet.red5pro_kafka_standalone[0].urn : "" ]),
-    compact([ var.node_image_create ? digitalocean_droplet.red5pro_node_instance[0].urn : "" ]),
-    compact([ local.autoscale ? digitalocean_loadbalancer.red5pro_lb[0].urn : "" ]),
+    compact([local.standalone ? digitalocean_droplet.red5pro_standalone[0].urn : ""]),
+    compact([local.cluster ? digitalocean_droplet.red5pro_sm[0].urn : ""]),
+    compact([local.kafka_standalone_dedicated ? digitalocean_droplet.red5pro_kafka_standalone[0].urn : ""]),
+    compact([var.node_image_create ? digitalocean_droplet.red5pro_node_instance[0].urn : ""]),
+    compact([local.autoscale ? digitalocean_loadbalancer.red5pro_lb[0].urn : ""]),
     compact(local.stream_managers_urn)
   )
 }
@@ -48,9 +48,9 @@ data "digitalocean_project" "existing_do_project" {
 }
 
 resource "digitalocean_project_resources" "do_project" {
-  count       = var.digital_ocean_project_use_existing ? 1 : 0
-  project     = data.digitalocean_project.existing_do_project[0].id
-  resources   = local.digital_ocean_project_resources
+  count     = var.digital_ocean_project_use_existing ? 1 : 0
+  project   = data.digitalocean_project.existing_do_project[0].id
+  resources = local.digital_ocean_project_resources
 }
 
 resource "digitalocean_project" "do_project" {
@@ -62,7 +62,7 @@ resource "digitalocean_project" "do_project" {
 }
 
 resource "digitalocean_tag" "red5pro_tag" {
-  name        = "${var.name}-red5-deployment"
+  name = "${var.name}-red5-deployment"
 }
 
 ################################################################################
@@ -102,7 +102,7 @@ data "digitalocean_ssh_key" "ssh_key_pair" {
   name  = var.ssh_key_name_existing
   lifecycle {
     postcondition {
-      condition =    self.name != null && self.name != ""
+      condition     = self.name != null && self.name != ""
       error_message = "ERROR! No SSH keys found with name ${var.ssh_key_name_existing} in Digital Ocean Account."
     }
   }
@@ -134,8 +134,8 @@ data "digitalocean_vpc" "existing_vpc" {
 # Red5 Pro Standalone server (DO Droplet)
 ################################################################################
 resource "digitalocean_reserved_ip" "red5pro_standalone_reserved_ip" {
-  count    =  local.cluster || local.autoscale ? 0 : local.standalone && var.standalone_server_reserved_ip_use_existing ? 0 : 1
-  region   = var.digital_ocean_region
+  count  = local.cluster || local.autoscale ? 0 : local.standalone && var.standalone_server_reserved_ip_use_existing ? 0 : 1
+  region = var.digital_ocean_region
 }
 
 data "digitalocean_reserved_ip" "existing_standalone_server_reserved_ip" {
@@ -158,7 +158,7 @@ resource "random_password" "ssl_password_red5pro_standalone" {
 resource "digitalocean_reserved_ip_assignment" "standalone_server_ip_association" {
   count      = local.standalone ? 1 : 0
   ip_address = local.standalone_server_ip
-  droplet_id =  digitalocean_droplet.red5pro_standalone[0].id
+  droplet_id = digitalocean_droplet.red5pro_standalone[0].id
 }
 
 resource "digitalocean_droplet" "red5pro_standalone" {
@@ -220,8 +220,8 @@ resource "digitalocean_droplet" "red5pro_standalone" {
       "sudo -E /home/red5pro-installer/r5p_config_node_apps_plugins.sh",
       "sudo systemctl daemon-reload && sudo systemctl start red5pro",
       "sudo mkdir -p /usr/local/red5pro/certs",
-      "echo '${try(file(var.https_ssl_certificate_cert_path), "")}' | sudo tee -a /usr/local/red5pro/certs/fullchain.pem",
-      "echo '${try(file(var.https_ssl_certificate_key_path), "")}' | sudo tee -a /usr/local/red5pro/certs/privkey.pem",
+      "echo '${try(file(var.https_ssl_certificate_cert_path), "")}' | sudo tee -a /usr/local/red5pro/certs/fullchain.pem >/dev/null",
+      "echo '${try(file(var.https_ssl_certificate_key_path), "")}' | sudo tee -a /usr/local/red5pro/certs/privkey.pem >/dev/null",
       "export SSL='${var.https_ssl_certificate}'",
       "export SSL_DOMAIN='${var.https_ssl_certificate_domain_name}'",
       "export SSL_MAIL='${var.https_ssl_certificate_email}'",
@@ -231,12 +231,6 @@ resource "digitalocean_droplet" "red5pro_standalone" {
       "sleep 2"
 
     ]
-    connection {
-      host        = self.ipv4_address
-      type        = "ssh"
-      user        = "root"
-      private_key = local.ssh_private_key
-    }
   }
 }
 
@@ -297,8 +291,8 @@ resource "digitalocean_firewall" "red5pro_sm_firewall" {
 # Stream manager - (DO droplet)
 ################################################################################
 resource "digitalocean_reserved_ip" "red5pro_sm_reserved_ip" {
-  count    =  local.standalone || local.autoscale ? 0 : local.cluster && var.stream_manager_reserved_ip_use_existing ? 0 : 1
-  region   = var.digital_ocean_region
+  count  = local.standalone || local.autoscale ? 0 : local.cluster && var.stream_manager_reserved_ip_use_existing ? 0 : 1
+  region = var.digital_ocean_region
 }
 
 data "digitalocean_reserved_ip" "existing_sm_reserved_ip" {
@@ -315,8 +309,8 @@ data "digitalocean_reserved_ip" "existing_sm_reserved_ip" {
 resource "digitalocean_reserved_ip_assignment" "sm_ip_association" {
   count      = local.cluster ? 1 : 0
   ip_address = local.stream_manager_ip
-  droplet_id =  digitalocean_droplet.red5pro_sm[0].id
-  depends_on = [ digitalocean_project_resources.do_project[0], digitalocean_project.do_project[0]]
+  droplet_id = digitalocean_droplet.red5pro_sm[0].id
+  depends_on = [digitalocean_project_resources.do_project[0], digitalocean_project.do_project[0]]
 }
 
 # Generate random password for Red5 Pro Stream Manager 2.0 authentication
@@ -329,7 +323,7 @@ resource "random_password" "r5as_auth_secret" {
 # Stream Manager droplet
 resource "digitalocean_droplet" "red5pro_sm" {
   count    = local.autoscale ? var.stream_managers_amount : local.cluster ? 1 : 0
-  name     = local.stream_managers_amount == 1 ? "${var.name}-red5-sm" : "${var.name}-red5-sm-${count.index+1}"
+  name     = local.stream_managers_amount == 1 ? "${var.name}-red5-sm" : "${var.name}-red5-sm-${count.index + 1}"
   region   = var.digital_ocean_region
   size     = var.stream_manager_droplet_size
   image    = lookup(var.ubuntu_image_version, var.ubuntu_version, "what?")
@@ -394,22 +388,27 @@ resource "null_resource" "red5pro_sm_configuration" {
     inline = [
       "sudo iptables -F",
       "sudo cloud-init status --wait",
-      "echo 'KAFKA_SSL_KEYSTORE_KEY=${local.kafka_ssl_keystore_key}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'KAFKA_SSL_TRUSTSTORE_CERTIFICATES=${local.kafka_ssl_truststore_cert}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'KAFKA_SSL_KEYSTORE_CERTIFICATE_CHAIN=${local.kafka_ssl_keystore_cert_chain}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'KAFKA_REPLICAS=${local.kafka_on_sm_replicas}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'KAFKA_IP=${local.kafka_ip}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'TRAEFIK_IP=${local.stream_manager_ip}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'TRAEFIK_HOST=${var.stream_manager_public_hostname}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'TF_VAR_digitalocean_project_name=${local.digital_ocean_project_name}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'AS_ADMIN_UI_VERSION=${var.stream_manager_admin_ui_version}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'AS_ADMIN_UI_MAIN_REGION=${var.digital_ocean_region}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'AS_ADMIN_UI_NODE_IMAGE_NAME=${local.red5pro_node_image_name}' | sudo tee -a /usr/local/stream-manager/.env",
-      "echo 'AS_ADMIN_UI_DIGITALOCEAN_VPC=${local.vpc_name}' | sudo tee -a /usr/local/stream-manager/.env",
+      "echo 'KAFKA_SSL_KEYSTORE_KEY=${local.kafka_ssl_keystore_key}' | sudo tee -a /usr/local/stream-manager/.env >/dev/null",
+      "echo 'KAFKA_SSL_TRUSTSTORE_CERTIFICATES=${local.kafka_ssl_truststore_cert}' | sudo tee -a /usr/local/stream-manager/.env >/dev/null",
+      "echo 'KAFKA_SSL_KEYSTORE_CERTIFICATE_CHAIN=${local.kafka_ssl_keystore_cert_chain}' | sudo tee -a /usr/local/stream-manager/.env >/dev/null",
+      <<-EOT
+      sudo tee -a /usr/local/stream-manager/.env <<'EOM'
+      KAFKA_REPLICAS=${local.kafka_on_sm_replicas}
+      KAFKA_IP=${local.kafka_ip}
+      TRAEFIK_IP=${local.stream_manager_ip}
+      TRAEFIK_HOST=${var.stream_manager_public_hostname}
+      TF_VAR_digitalocean_project_name=${local.digital_ocean_project_name}
+      AS_ADMIN_UI_VERSION=${var.stream_manager_version}
+      AS_ADMIN_UI_MAIN_REGION=${var.digital_ocean_region}
+      AS_ADMIN_UI_NODE_IMAGE_NAME=${local.red5pro_node_image_name}
+      AS_ADMIN_UI_DIGITALOCEAN_VPC=${local.vpc_name}
+      EOM
+      EOT
+      ,
       "export SM_SSL='${local.stream_manager_ssl}'",
       "export SM_STANDALONE='${local.stream_manager_standalone}'",
       "export SM_AUTOSCALE='${local.stream_manager_autoscale}'",
-      "export SM_SSL_DOMAIN='${var.https_ssl_certificate_domain_name}'",
+      "export KAFKA_REPLICAS='${local.kafka_on_sm_replicas}'",
       "export CONTAINER_REGISTRY='${var.stream_manager_container_registry}'",
       "export CONTAINER_REGISTRY_USER='${var.stream_manager_container_registry_user}'",
       "export CONTAINER_REGISTRY_PASSWORD='${var.stream_manager_container_registry_password}'",
@@ -535,7 +534,7 @@ resource "tls_locally_signed_cert" "kafka_server_cert" {
   ca_private_key_pem = tls_private_key.ca_private_key[0].private_key_pem
   ca_cert_pem        = tls_self_signed_cert.ca_cert[0].cert_pem
 
-  validity_period_hours = 1 * 365 * 24
+  validity_period_hours = 365 * 24
 
   allowed_uses = [
     "digital_signature",
@@ -574,11 +573,11 @@ resource "null_resource" "red5pro_kafka_standalone_configuration" {
     inline = [
       "sudo iptables -F",
       "sudo cloud-init status --wait",
-      "echo 'ssl.keystore.key=${local.kafka_ssl_keystore_key}' | sudo tee -a /home/red5pro-installer/server.properties",
-      "echo 'ssl.truststore.certificates=${local.kafka_ssl_truststore_cert}' | sudo tee -a /home/red5pro-installer/server.properties",
-      "echo 'ssl.keystore.certificate.chain=${local.kafka_ssl_keystore_cert_chain}' | sudo tee -a /home/red5pro-installer/server.properties",
-      "echo 'listener.name.broker.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${nonsensitive(random_string.kafka_admin_username[0].result)}\" password=\"${nonsensitive(random_id.kafka_admin_password[0].id)}\" user_${nonsensitive(random_string.kafka_admin_username[0].result)}=\"${nonsensitive(random_id.kafka_admin_password[0].id)}\" user_${nonsensitive(random_string.kafka_client_username[0].result)}=\"${nonsensitive(random_id.kafka_client_password[0].id)}\";' | sudo tee -a /home/red5pro-installer/server.properties",
-      "echo 'listener.name.controller.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${nonsensitive(random_string.kafka_admin_username[0].result)}\" password=\"${nonsensitive(random_id.kafka_admin_password[0].id)}\" user_${nonsensitive(random_string.kafka_admin_username[0].result)}=\"${nonsensitive(random_id.kafka_admin_password[0].id)}\" user_${nonsensitive(random_string.kafka_client_username[0].result)}=\"${nonsensitive(random_id.kafka_client_password[0].id)}\";' | sudo tee -a /home/red5pro-installer/server.properties",
+      "echo 'ssl.keystore.key=${local.kafka_ssl_keystore_key}' | sudo tee -a /home/red5pro-installer/server.properties >/dev/null",
+      "echo 'ssl.truststore.certificates=${local.kafka_ssl_truststore_cert}' | sudo tee -a /home/red5pro-installer/server.properties >/dev/null",
+      "echo 'ssl.keystore.certificate.chain=${local.kafka_ssl_keystore_cert_chain}' | sudo tee -a /home/red5pro-installer/server.properties >/dev/null",
+      "echo 'listener.name.broker.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${nonsensitive(random_string.kafka_admin_username[0].result)}\" password=\"${nonsensitive(random_id.kafka_admin_password[0].id)}\" user_${nonsensitive(random_string.kafka_admin_username[0].result)}=\"${nonsensitive(random_id.kafka_admin_password[0].id)}\" user_${nonsensitive(random_string.kafka_client_username[0].result)}=\"${nonsensitive(random_id.kafka_client_password[0].id)}\";' | sudo tee -a /home/red5pro-installer/server.properties >/dev/null",
+      "echo 'listener.name.controller.plain.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${nonsensitive(random_string.kafka_admin_username[0].result)}\" password=\"${nonsensitive(random_id.kafka_admin_password[0].id)}\" user_${nonsensitive(random_string.kafka_admin_username[0].result)}=\"${nonsensitive(random_id.kafka_admin_password[0].id)}\" user_${nonsensitive(random_string.kafka_client_username[0].result)}=\"${nonsensitive(random_id.kafka_client_password[0].id)}\";' | sudo tee -a /home/red5pro-installer/server.properties >/dev/null",
       "echo 'advertised.listeners=BROKER://${local.kafka_ip}:9092' | sudo tee -a /home/red5pro-installer/server.properties",
       "export KAFKA_ARCHIVE_URL='${var.kafka_standalone_instance_arhive_url}'",
       "export KAFKA_CLUSTER_ID='${random_id.kafka_cluster_id[0].b64_std}'",
@@ -586,12 +585,6 @@ resource "null_resource" "red5pro_kafka_standalone_configuration" {
       "sudo chmod +x /home/red5pro-installer/*.sh",
       "sudo -E /home/red5pro-installer/r5p_kafka_install.sh",
     ]
-    connection {
-      host        = digitalocean_droplet.red5pro_kafka_standalone[0].ipv4_address
-      type        = "ssh"
-      user        = "root"
-      private_key = local.ssh_private_key
-    }
   }
   depends_on = [tls_cert_request.kafka_server_csr]
 }
@@ -654,21 +647,21 @@ resource "digitalocean_loadbalancer" "red5pro_lb" {
   }
 
   sticky_sessions {
-    type = "cookies"
-    cookie_name = "${var.name}-lb-cookie"
+    type               = "cookies"
+    cookie_name        = "${var.name}-lb-cookie"
     cookie_ttl_seconds = 300
   }
 
-  vpc_uuid = local.vpc_id
+  vpc_uuid    = local.vpc_id
   droplet_ids = local.stream_managers_id
-  depends_on = [ digitalocean_droplet.red5pro_sm ]
+  depends_on  = [digitalocean_droplet.red5pro_sm]
 }
 
 # Load Balancer Certificate 
 resource "digitalocean_certificate" "new_lb_cert" {
-  count            = var.create_load_balancer_with_ssl && local.autoscale ? 1 : 0
-  name             = "${var.name}-lb-ssl-cert"
-  type             = "custom"
+  count             = var.create_load_balancer_with_ssl && local.autoscale ? 1 : 0
+  name              = "${var.name}-lb-ssl-cert"
+  type              = "custom"
   private_key       = file(var.load_balancer_cert_private_key)
   leaf_certificate  = file(var.load_balancer_cert_public)
   certificate_chain = file(var.load_balancer_cert_chain)
@@ -723,12 +716,6 @@ resource "digitalocean_droplet" "red5pro_node_instance" {
       "sudo -E /home/red5pro-installer/r5p_cleanup_node.sh",
       "sleep 2"
     ]
-    connection {
-      host        = digitalocean_droplet.red5pro_node_instance[0].ipv4_address
-      type        = "ssh"
-      user        = "root"
-      private_key = local.ssh_private_key
-    }
   }
 }
 
@@ -747,12 +734,12 @@ resource "random_id" "node_image_suffix" {
 
 # Node - Create image
 resource "digitalocean_droplet_snapshot" "node-snapshot" {
-  count          = local.cluster_or_autoscale && var.node_image_create ? 1 : 0
-  droplet_id     = digitalocean_droplet.red5pro_node_instance[0].id
-  name           = local.red5pro_node_image_name
-  depends_on     = [null_resource.poweroff_node_instance]
+  count      = local.cluster_or_autoscale && var.node_image_create ? 1 : 0
+  droplet_id = digitalocean_droplet.red5pro_node_instance[0].id
+  name       = local.red5pro_node_image_name
+  depends_on = [null_resource.poweroff_node_instance]
   lifecycle {
-    ignore_changes = [ name ]
+    ignore_changes = [name]
   }
 }
 
@@ -767,7 +754,7 @@ resource "null_resource" "poweroff_node_instance" {
       DIGITALOCEAN_ACCESS_TOKEN = "${var.digital_ocean_access_token}"
     }
   }
-  depends_on     = [digitalocean_droplet.red5pro_node_instance]
+  depends_on = [digitalocean_droplet.red5pro_node_instance]
 }
 
 resource "null_resource" "delete_node_instance" {
@@ -778,15 +765,15 @@ resource "null_resource" "delete_node_instance" {
       DIGITALOCEAN_ACCESS_TOKEN = "${var.digital_ocean_access_token}"
     }
   }
-  depends_on     = [digitalocean_droplet_snapshot.node-snapshot]
+  depends_on = [digitalocean_droplet_snapshot.node-snapshot]
 }
 
 ################################################################################
 # Create/Delete node group (Stream Manager API)
 ################################################################################
 resource "time_sleep" "wait_for_delete_nodegroup" {
-  count            = var.node_group_create ? 1 : 0
-  depends_on = [ 
+  count = var.node_group_create ? 1 : 0
+  depends_on = [
     local.stream_managers_id,
     digitalocean_firewall.red5pro_sm_firewall[0],
     digitalocean_droplet.red5pro_kafka_standalone[0],
@@ -796,67 +783,58 @@ resource "time_sleep" "wait_for_delete_nodegroup" {
     null_resource.red5pro_kafka_standalone_configuration[0],
     digitalocean_reserved_ip_assignment.sm_ip_association[0]
   ]
-  destroy_duration = "90s"
+  destroy_duration = "120s"
 }
 
 resource "null_resource" "node_group" {
   count = local.cluster_or_autoscale && var.node_group_create ? 1 : 0
   triggers = {
     trigger_name   = "node-group-trigger"
-    SM_IP          = "${local.stream_manager_ip}"
-    R5AS_AUTH_USER = "${var.stream_manager_auth_user}"
-    R5AS_AUTH_PASS = "${var.stream_manager_auth_password}"
+    SM_IP          = local.stream_manager_ip
+    R5AS_AUTH_USER = var.stream_manager_auth_user
+    R5AS_AUTH_PASS = var.stream_manager_auth_password
   }
   provisioner "local-exec" {
     when    = create
     command = "bash ${abspath(path.module)}/red5pro-installer/r5p_create_node_group.sh"
     environment = {
-      SM_IP                                          = "${local.stream_manager_ip}"
-      NODE_GROUP_NAME                                = "${substr(var.name, 0, 16)}"
-      R5AS_AUTH_USER                                 = "${var.stream_manager_auth_user}"
-      R5AS_AUTH_PASS                                 = "${var.stream_manager_auth_password}"
+      SM_IP                                          = local.stream_manager_ip
+      NODE_GROUP_NAME                                = substr(var.name, 0, 16)
+      R5AS_AUTH_USER                                 = var.stream_manager_auth_user
+      R5AS_AUTH_PASS                                 = var.stream_manager_auth_password
       NODE_GROUP_CLOUD_PLATFORM                      = "DO"
-      NODE_GROUP_REGIONS                             = "${var.digital_ocean_region}"
-      NODE_GROUP_ENVIRONMENT                         = "${var.name}"
-      NODE_GROUP_VPC_NAME                            = "${local.vpc_name}"
-      NODE_GROUP_IMAGE_NAME                          = "${digitalocean_droplet_snapshot.node-snapshot[0].name}"
-      NODE_GROUP_ORIGINS_MIN                         = "${var.node_group_origins_min}"
-      NODE_GROUP_ORIGINS_MAX                         = "${var.node_group_origins_max}"
-      NODE_GROUP_ORIGIN_INSTANCE_TYPE                = "${var.node_group_origins_droplet_size}"
-      NODE_GROUP_ORIGIN_VOLUME_SIZE                  = "${var.node_group_origins_volume_size}"
-      NODE_GROUP_ORIGINS_CONNECTION_LIMIT            = "${var.node_group_origins_connection_limit}"
-      NODE_GROUP_EDGES_MIN                           = "${var.node_group_edges_min}"
-      NODE_GROUP_EDGES_MAX                           = "${var.node_group_edges_max}"
-      NODE_GROUP_EDGE_INSTANCE_TYPE                  = "${var.node_group_edges_droplet_size}"
-      NODE_GROUP_EDGE_VOLUME_SIZE                    = "${var.node_group_edges_volume_size}"
-      NODE_GROUP_EDGES_CONNECTION_LIMIT              = "${var.node_group_edges_connection_limit}"
-      NODE_GROUP_TRANSCODERS_MIN                     = "${var.node_group_transcoders_min}"
-      NODE_GROUP_TRANSCODERS_MAX                     = "${var.node_group_transcoders_max}"
-      NODE_GROUP_TRANSCODER_INSTANCE_TYPE            = "${var.node_group_transcoders_droplet_size}"
-      NODE_GROUP_TRANSCODER_VOLUME_SIZE              = "${var.node_group_transcoders_volume_size}"
-      NODE_GROUP_TRANSCODERS_CONNECTION_LIMIT        = "${var.node_group_transcoders_connection_limit}"
-      NODE_GROUP_RELAYS_MIN                          = "${var.node_group_relays_min}"
-      NODE_GROUP_RELAYS_MAX                          = "${var.node_group_relays_max}"
-      NODE_GROUP_RELAY_INSTANCE_TYPE                 = "${var.node_group_relays_droplet_size}"
-      NODE_GROUP_RELAY_VOLUME_SIZE                   = "${var.node_group_relays_volume_size}"
-      NODE_GROUP_ROUND_TRIP_AUTH_ENABLE              = "${var.node_config_round_trip_auth.enable}"
-      NODE_GROUP_ROUNT_TRIP_AUTH_TARGET_NODES        = "${join(",", var.node_config_round_trip_auth.target_nodes)}"
-      NODE_GROUP_ROUND_TRIP_AUTH_HOST                = "${var.node_config_round_trip_auth.auth_host}"
-      NODE_GROUP_ROUND_TRIP_AUTH_PORT                = "${var.node_config_round_trip_auth.auth_port}"
-      NODE_GROUP_ROUND_TRIP_AUTH_PROTOCOL            = "${var.node_config_round_trip_auth.auth_protocol}"
-      NODE_GROUP_ROUND_TRIP_AUTH_ENDPOINT_VALIDATE   = "${var.node_config_round_trip_auth.auth_endpoint_validate}"
-      NODE_GROUP_ROUND_TRIP_AUTH_ENDPOINT_INVALIDATE = "${var.node_config_round_trip_auth.auth_endpoint_invalidate}"
-      NODE_GROUP_WEBHOOK_ENABLE                      = "${var.node_config_webhooks.enable}"
-      NODE_GROUP_WEBHOOK_TARGET_NODES                = "${join(",", var.node_config_webhooks.target_nodes)}"
-      NODE_GROUP_WEBHOOK_ENDPOINT                    = "${var.node_config_webhooks.webhook_endpoint}"
-      NODE_GROUP_SOCIAL_PUSHER_ENABLE                = "${var.node_config_social_pusher.enable}"
-      NODE_GROUP_SOCIAL_PUSHER_TARGET_NODES          = "${join(",", var.node_config_social_pusher.target_nodes)}"
-      NODE_GROUP_RESTREAMER_ENABLE                   = "${var.node_config_restreamer.enable}"
-      NODE_GROUP_RESTREAMER_TARGET_NODES             = "${join(",", var.node_config_restreamer.target_nodes)}"
-      NODE_GROUP_RESTREAMER_TSINGEST                 = "${var.node_config_restreamer.restreamer_tsingest}"
-      NODE_GROUP_RESTREAMER_IPCAM                    = "${var.node_config_restreamer.restreamer_ipcam}"
-      NODE_GROUP_RESTREAMER_WHIP                     = "${var.node_config_restreamer.restreamer_whip}"
-      NODE_GROUP_RESTREAMER_SRTINGEST                = "${var.node_config_restreamer.restreamer_srtingest}"
+      NODE_GROUP_REGIONS                             = var.digital_ocean_region
+      NODE_GROUP_ENVIRONMENT                         = var.name
+      NODE_GROUP_VPC_NAME                            = local.vpc_name
+      NODE_GROUP_IMAGE_NAME                          = digitalocean_droplet_snapshot.node-snapshot[0].name
+      NODE_GROUP_ORIGINS_MIN                         = var.node_group_origins_min
+      NODE_GROUP_ORIGINS_MAX                         = var.node_group_origins_max
+      NODE_GROUP_ORIGIN_INSTANCE_TYPE                = var.node_group_origins_droplet_size
+      NODE_GROUP_ORIGIN_VOLUME_SIZE                  = var.node_group_origins_volume_size
+      NODE_GROUP_EDGES_MIN                           = var.node_group_edges_min
+      NODE_GROUP_EDGES_MAX                           = var.node_group_edges_max
+      NODE_GROUP_EDGE_INSTANCE_TYPE                  = var.node_group_edges_droplet_size
+      NODE_GROUP_EDGE_VOLUME_SIZE                    = var.node_group_edges_volume_size
+      NODE_GROUP_TRANSCODERS_MIN                     = var.node_group_transcoders_min
+      NODE_GROUP_TRANSCODERS_MAX                     = var.node_group_transcoders_max
+      NODE_GROUP_TRANSCODER_INSTANCE_TYPE            = var.node_group_transcoders_droplet_size
+      NODE_GROUP_TRANSCODER_VOLUME_SIZE              = var.node_group_transcoders_volume_size
+      NODE_GROUP_RELAYS_MIN                          = var.node_group_relays_min
+      NODE_GROUP_RELAYS_MAX                          = var.node_group_relays_max
+      NODE_GROUP_RELAY_INSTANCE_TYPE                 = var.node_group_relays_droplet_size
+      NODE_GROUP_RELAY_VOLUME_SIZE                   = var.node_group_relays_volume_size
+      NODE_GROUP_ROUND_TRIP_AUTH_ENABLE              = var.node_config_round_trip_auth.enable
+      NODE_GROUP_ROUNT_TRIP_AUTH_TARGET_NODES        = join(",", var.node_config_round_trip_auth.target_nodes)
+      NODE_GROUP_ROUND_TRIP_AUTH_HOST                = var.node_config_round_trip_auth.auth_host
+      NODE_GROUP_ROUND_TRIP_AUTH_PORT                = var.node_config_round_trip_auth.auth_port
+      NODE_GROUP_ROUND_TRIP_AUTH_PROTOCOL            = var.node_config_round_trip_auth.auth_protocol
+      NODE_GROUP_ROUND_TRIP_AUTH_ENDPOINT_VALIDATE   = var.node_config_round_trip_auth.auth_endpoint_validate
+      NODE_GROUP_ROUND_TRIP_AUTH_ENDPOINT_INVALIDATE = var.node_config_round_trip_auth.auth_endpoint_invalidate
+      NODE_GROUP_WEBHOOK_ENABLE                      = var.node_config_webhooks.enable
+      NODE_GROUP_WEBHOOK_TARGET_NODES                = join(",", var.node_config_webhooks.target_nodes)
+      NODE_GROUP_WEBHOOK_ENDPOINT                    = var.node_config_webhooks.webhook_endpoint
+      NODE_GROUP_SOCIAL_PUSHER_ENABLE                = var.node_config_social_pusher.enable
+      NODE_GROUP_SOCIAL_PUSHER_TARGET_NODES          = join(",", var.node_config_social_pusher.target_nodes)
     }
   }
 

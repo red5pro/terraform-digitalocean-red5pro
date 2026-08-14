@@ -1,6 +1,6 @@
 ## Red5 Pro Stream Manager cluster deployment (cluster) - [Example](https://github.com/red5pro/terraform-digitalocean-red5pro/tree/main/example/cluster)
 
-**`stream_manager_public_hostname`:** Set this to the DNS name clients use for Stream Manager (e.g. `sm.example.com`). It sets Traefik’s host, the admin UI API base, and outputs such as `stream_manager_url_https`. Use a concrete FQDN, not a wildcard. For TLS, `https_ssl_certificate_domain_name` may still be a wildcard (e.g. `*.example.com`) if the certificate covers this hostname.
+**`stream_manager_public_hostname`:** Set this to the DNS name clients use for Stream Manager (e.g. `sm.example.com`). It sets Traefik’s host, the admin UI API base, and outputs such as `stream_manager_url_https`. Use a concrete FQDN, not a wildcard. It is also the certificate subject: with `letsencrypt` the ACME challenge is issued for this hostname, and with `imported` your certificate must cover it. `https_ssl_certificate_domain_name` is not used for cluster deployments.
 
 - VPC
 - Public subnet
