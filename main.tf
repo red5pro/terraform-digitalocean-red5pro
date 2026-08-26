@@ -320,6 +320,14 @@ resource "random_password" "r5as_auth_secret" {
   special = false
 }
 
+# Generate the AS-Admin secrets store encryption key once. For type=autoscale,
+# stream_managers_amount can be > 1 independent droplets that share one Kafka-backed
+# secret store, so all of them must decrypt with the same key.
+resource "random_id" "r5as_secrets_key" {
+  count       = local.cluster_or_autoscale ? 1 : 0
+  byte_length = 32
+}
+
 # Stream Manager droplet
 resource "digitalocean_droplet" "red5pro_sm" {
   count    = local.autoscale ? var.stream_managers_amount : local.cluster ? 1 : 0
@@ -344,9 +352,12 @@ resource "digitalocean_droplet" "red5pro_sm" {
   }
   user_data = <<-EOF
     #!/bin/bash
+    mkdir -p /usr/local/stream-manager/keys
     mkdir -p /usr/local/stream-manager/certs
     echo "${try(file(var.https_ssl_certificate_cert_path), "")}" > /usr/local/stream-manager/certs/cert.pem
     echo "${try(file(var.https_ssl_certificate_key_path), "")}" > /usr/local/stream-manager/certs/privkey.pem
+    echo "${random_id.r5as_secrets_key[0].b64_std}" > /usr/local/stream-manager/keys/r5as-secrets.key
+    chmod 400 /usr/local/stream-manager/keys/r5as-secrets.key
     # Get hostname and extract instance number
     HOSTNAME=$(hostname)
     # Extract instance number from hostname (e.g., "name-stream-manager-abc1" -> "abc1")
