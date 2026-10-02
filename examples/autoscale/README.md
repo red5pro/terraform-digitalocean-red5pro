@@ -7,9 +7,11 @@
 - Public subnet
 - Firewall for Stream Manager 2.0
 - Firewall for Kafka
+- Firewall for RabbitMQ (optional)
 - Firewall for Red5 Pro (SM2.0) Autoscaling nodes
 - SSH key pair (use existing or create a new one)
 - Standalone Kafka instance
+- RabbitMQ in Docker (optional): one droplet (`rabbitmq_mode = "single"`) or a 3 node RabbitMQ cluster (`rabbitmq_mode = "cluster"`). AMQP port `5672` is open only for the VPC IP range, nodes connect to the private IPs.
 - Stream Manager 2.0 instance image
 - Instance poll for Stream Manager 2.0 instances
 - Load Balancer for Stream Manager 2.0 instances.

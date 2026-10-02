@@ -50,12 +50,26 @@ module "red5pro" {
   stream_manager_proxy_password               = "example_proxy_password"   # Stream Manager 2.0 proxy password
   stream_manager_spatial_user                 = "example_spatial_user"     # Stream Manager 2.0 spatial user name
   stream_manager_spatial_password             = "example_spatial_password" # Stream Manager 2.0 spatial password
+  stream_manager_intent_user                  = "intent_admin"             # Stream Manager 2.0 intent API user name
+  stream_manager_intent_password              = ""                         # Stream Manager 2.0 intent API password (generated when empty)
   stream_manager_version                      = "latest"                   # Stream Manager 2.0 docker images version (latest, 14.1.0, 14.1.1, etc.) - https://hub.docker.com/r/red5pro/as-admin/tags
   stream_manager_public_hostname              = "sm.example.com"           # Required: public FQDN for Traefik, admin UI, and HTTPS URLs (not a wildcard). Point DNS A record at the Stream Manager IP from outputs.
 
   # Terraform Service configuration
   kafka_standalone_instance_create = false # true - Create a dedicate terraform service droplet, false - install terraform service locally on the stream manager                                                   # Terraform service parallelism
   kafka_standalone_droplet_size    = "c-4" # Terraform service droplet size
+
+  # RabbitMQ configuration - (Optional)
+  rabbitmq_create       = false                       # true - create RabbitMQ droplets, false - do not create RabbitMQ
+  rabbitmq_mode         = "single"                    # single - one droplet, cluster - 3 droplets in a RabbitMQ cluster
+  rabbitmq_image        = "rabbitmq:4.3.6-management" # RabbitMQ Docker image
+  rabbitmq_droplet_size = "s-2vcpu-4gb"               # RabbitMQ droplet size
+  rabbitmq_user         = "red5pro"                   # RabbitMQ user name
+  rabbitmq_password     = ""                          # RabbitMQ user password, empty value - generate a random password
+
+  # Red5 Pro Stream Proxy configuration - (Optional, cluster only)
+  stream_proxy_enable  = false # true - deploy Red5 Pro Stream Proxy on the Stream Manager 2.0 droplet (cluster only)
+  stream_proxy_version = ""    # Red5 Pro Stream Proxy docker image version, required when stream_proxy_enable = true. Example: main.b41
 
   # Red5 Pro general configuration
   red5pro_license_key = "1111-2222-3333-4444" # Red5 Pro license key (https://account.red5pro.com/login)
@@ -123,5 +137,5 @@ module "red5pro" {
 
 output "module_output" {
   sensitive = false
-  value     = module.red5pro
+  value     = { for k, v in module.red5pro : k => v if !contains(["rabbitmq_password", "stream_manager_intent_password"], k) }
 }
