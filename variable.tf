@@ -82,6 +82,51 @@ variable "kafka_standalone_instance_arhive_url" {
   default     = "https://archive.apache.org/dist/kafka/3.9.2/kafka_2.13-3.9.2.tgz"
 }
 
+# RabbitMQ configuration
+variable "rabbitmq_create" {
+  description = "Create RabbitMQ droplets (cluster/autoscale only) true/false"
+  type        = bool
+  default     = false
+}
+variable "rabbitmq_mode" {
+  description = "RabbitMQ deployment mode: single - one droplet, cluster - 3 droplets in a RabbitMQ cluster"
+  type        = string
+  default     = "single"
+  validation {
+    condition     = contains(["single", "cluster"], var.rabbitmq_mode)
+    error_message = "The rabbitmq_mode value must be single or cluster"
+  }
+}
+variable "rabbitmq_image" {
+  description = "RabbitMQ Docker image"
+  type        = string
+  default     = "rabbitmq:4.3.6-management"
+}
+variable "rabbitmq_droplet_size" {
+  description = "RabbitMQ droplet size"
+  type        = string
+  default     = "s-2vcpu-4gb"
+}
+variable "rabbitmq_user" {
+  description = "RabbitMQ user name"
+  type        = string
+  default     = "red5pro"
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_-]+$", var.rabbitmq_user))
+    error_message = "The rabbitmq_user value must contain only letters, digits, '_' and '-'"
+  }
+}
+variable "rabbitmq_password" {
+  description = "RabbitMQ user password, empty value - generate a random password"
+  type        = string
+  default     = ""
+  sensitive   = true
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_-]*$", var.rabbitmq_password))
+    error_message = "The rabbitmq_password value must contain only letters, digits, '_' and '-'"
+  }
+}
+
 # Digital Ocean Firewall Configuration to allow required ports of red5pro stream manager droplet
 # Inbound rules for stream manager red5pro
 variable "firewall_stream_manager_inbound" {
@@ -110,6 +155,37 @@ variable "firewall_stream_manager_inbound" {
     {
       protocol         = "tcp"
       port_range       = "443"
+      source_addresses = ["0.0.0.0/0", "::/0"]
+    }
+  ]
+}
+
+variable "firewall_stream_proxy_inbound" {
+  description = "List of inbound firewall rules for Stream Manager - Stream Proxy, used only when stream_proxy_enable = true"
+  type = list(object({
+    protocol         = string
+    port_range       = string
+    source_addresses = list(string)
+  }))
+  default = [
+    {
+      protocol         = "tcp"
+      port_range       = "1935-1944"
+      source_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "tcp"
+      port_range       = "8554-8563"
+      source_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "udp"
+      port_range       = "8554-8558"
+      source_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol         = "udp"
+      port_range       = "10100-10149"
       source_addresses = ["0.0.0.0/0", "::/0"]
     }
   ]
@@ -164,6 +240,48 @@ variable "firewall_kafka_standalone_inbound" {
 
 variable "firewall_kafka_standalone_outbound" {
   description = "List of outbound firewall rules"
+  type = list(object({
+    protocol              = string
+    port_range            = string
+    destination_addresses = list(string)
+  }))
+  default = [
+    {
+      protocol              = "tcp"
+      port_range            = "1-65535"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol              = "icmp"
+      port_range            = "0"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
+    },
+    {
+      protocol              = "udp"
+      port_range            = "1-65535"
+      destination_addresses = ["0.0.0.0/0", "::/0"]
+    }
+  ]
+}
+
+variable "firewall_rabbitmq_inbound" {
+  description = "List of inbound firewall rules for RabbitMQ droplets. AMQP port 5672 is always allowed from the VPC IP range, cluster ports between RabbitMQ droplets"
+  type = list(object({
+    protocol         = string
+    port_range       = string
+    source_addresses = list(string)
+  }))
+  default = [
+    {
+      protocol         = "tcp"
+      port_range       = "22"
+      source_addresses = ["0.0.0.0/0", "::/0"]
+    }
+  ]
+}
+
+variable "firewall_rabbitmq_outbound" {
+  description = "List of outbound firewall rules for RabbitMQ droplets"
   type = list(object({
     protocol              = string
     port_range            = string
@@ -718,6 +836,29 @@ variable "stream_manager_spatial_user" {
 }
 variable "stream_manager_spatial_password" {
   description = "value to set the user password for Stream Manager 2.0 spatial"
+  type        = string
+  default     = ""
+}
+variable "stream_manager_intent_user" {
+  description = "value to set the user name for Stream Manager 2.0 intent API (ROLE_INTENT)"
+  type        = string
+  default     = "intent_admin"
+}
+variable "stream_manager_intent_password" {
+  description = "value to set the user password for Stream Manager 2.0 intent API (ROLE_INTENT). Generated when empty"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# Red5 Pro Stream Proxy configuration
+variable "stream_proxy_enable" {
+  description = "Deploy Red5 Pro Stream Proxy alongside the Stream Manager 2.0 services. Supported for deployment type cluster only. It publishes RTMP/RTMPS 1935-1944, RTSP/RTSPS 8554-8563 and SRT 10100-10149 on the Stream Manager droplet, and the matching rules are added to the Stream Manager firewall."
+  type        = bool
+  default     = false
+}
+variable "stream_proxy_version" {
+  description = "Red5 Pro Stream Proxy docker image version, used only when stream_proxy_enable = true. Example: main.b41"
   type        = string
   default     = ""
 }

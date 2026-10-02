@@ -49,11 +49,21 @@ module "red5pro" {
   stream_manager_proxy_password   = "example_proxy_password"   # Stream Manager 2.0 proxy password
   stream_manager_spatial_user     = "example_spatial_user"     # Stream Manager 2.0 spatial user name
   stream_manager_spatial_password = "example_spatial_password" # Stream Manager 2.0 spatial password
+  stream_manager_intent_user      = "intent_admin"             # Stream Manager 2.0 intent API user name
+  stream_manager_intent_password  = ""                         # Stream Manager 2.0 intent API password (generated when empty)
   stream_manager_version          = "latest"                   # Stream Manager 2.0 docker images version (latest, 14.1.0, 14.1.1, etc.) - https://hub.docker.com/r/red5pro/as-admin/tags
   stream_manager_public_hostname  = "sm.example.com"           # Required: public FQDN for Traefik, admin UI, and HTTPS URLs (not a wildcard). Point DNS A/alias at the load balancer DNS name from outputs.
 
   # Terraform Service configuration
   kafka_standalone_droplet_size = "c-8" # Terraform service droplet size
+
+  # RabbitMQ configuration - (Optional)
+  rabbitmq_create       = false                       # true - create RabbitMQ droplets, false - do not create RabbitMQ
+  rabbitmq_mode         = "single"                    # single - one droplet, cluster - 3 droplets in a RabbitMQ cluster
+  rabbitmq_image        = "rabbitmq:4.3.6-management" # RabbitMQ Docker image
+  rabbitmq_droplet_size = "s-2vcpu-4gb"               # RabbitMQ droplet size
+  rabbitmq_user         = "red5pro"                   # RabbitMQ user name
+  rabbitmq_password     = ""                          # RabbitMQ user password, empty value - generate a random password
 
   # Load Balancer configuration for Stream Manager
   create_load_balancer_with_ssl  = true            # Create a new SSL certificate for Load Balancer (autoscaling)
@@ -116,5 +126,5 @@ module "red5pro" {
 
 output "module_output" {
   sensitive = false
-  value     = module.red5pro
+  value     = { for k, v in module.red5pro : k => v if !contains(["rabbitmq_password", "stream_manager_intent_password"], k) }
 }
