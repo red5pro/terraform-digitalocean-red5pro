@@ -89,5 +89,5 @@ module "red5pro" {
 
 output "module_output" {
   sensitive = true
-  value     = module.red5pro
+  value     = { for k, v in module.red5pro : k => v if !contains(["rabbitmq_password", "stream_manager_intent_password"], k) }
 }
